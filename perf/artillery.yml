@@ -1,0 +1,13 @@
+config:
+  target: https://www.saucedemo.com
+  engines:
+    playwright: {}
+  processor: "./processor.ts"
+  phases:
+    - duration: 60
+      arrivalCount: 5
+      name: "Load phase"
+
+scenarios:
+  - engine: playwright
+    testFunction: "loginFlow"

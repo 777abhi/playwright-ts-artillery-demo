@@ -1,0 +1,31 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:functional": "cucumber-js",
+    "test:performance": "artillery run perf/artillery.yml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/777abhi/playwright-ts-artillery-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/777abhi/playwright-ts-artillery-demo/issues"
+  },
+  "homepage": "https://github.com/777abhi/playwright-ts-artillery-demo#readme",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.6.0",
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^25.0.10",
+    "artillery": "^2.0.28",
+    "playwright": "^1.58.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
