@@ -1,0 +1,14 @@
+config:
+  target: "http://localhost:3000"
+  engines:
+    playwright: {}
+  processor: "../tests/performance-steps.js"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Sustained Load"
+
+scenarios:
+  - name: "High Latency Simulation"
+    engine: playwright
+    testFunction: "runPerformanceFlow"
