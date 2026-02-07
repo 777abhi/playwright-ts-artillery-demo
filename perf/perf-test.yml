@@ -2,7 +2,7 @@ config:
   target: "http://localhost:3000"
   engines:
     playwright: {}
-  processor: "../tests/performance-steps.js"
+  processor: "../tests/performance-steps.ts"
   phases:
     - duration: 60
       arrivalRate: 5
