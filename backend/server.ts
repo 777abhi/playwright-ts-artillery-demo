@@ -1,13 +1,20 @@
-const fastify = require('fastify')({ logger: true });
-const cors = require('@fastify/cors');
+import Fastify, { FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
+
+const fastify: FastifyInstance = Fastify({ logger: true });
 
 fastify.register(cors, {
   origin: '*'
 });
 
-fastify.get('/process', async (request, reply) => {
-  const delay = parseInt(request.query.delay) || 0;
-  const cpuLoad = parseInt(request.query.cpuLoad) || 0;
+interface ProcessQuery {
+  delay?: string;
+  cpuLoad?: string;
+}
+
+fastify.get<{ Querystring: ProcessQuery }>('/process', async (request, reply) => {
+  const delay = parseInt(request.query.delay || '0') || 0;
+  const cpuLoad = parseInt(request.query.cpuLoad || '0') || 0;
 
   // Service Fail Simulation
   if (delay < 0) {

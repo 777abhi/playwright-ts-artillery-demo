@@ -1,5 +1,6 @@
-// tests/performance-steps.js
-async function runPerformanceFlow(page) {
+import { Page } from '@playwright/test';
+
+export async function runPerformanceFlow(page: Page) {
   // Navigate to app
   await page.goto('http://localhost:3000');
 
@@ -15,5 +16,3 @@ async function runPerformanceFlow(page) {
   const duration = Date.now() - startTime;
   console.log(`Transaction completed in ${duration}ms`);
 }
-
-module.exports = { runPerformanceFlow };
