@@ -27,7 +27,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Start Application
-      run: docker-compose up -d --build
+      run: docker compose up -d --build
 
     - name: Wait for Services
       run: |
@@ -50,10 +50,6 @@ jobs:
     - name: Run Performance Tests
       run: npm run test:performance -- --output performance-report.json
 
-    - name: Generate Performance Report
-      if: always()
-      run: npx artillery report performance-report.json --output performance-report.html
-
     - name: Upload Test Reports
       if: always()
       uses: actions/upload-artifact@v4
@@ -61,4 +57,4 @@ jobs:
         name: test-reports
         path: |
           cucumber-report.html
-          performance-report.html
+          performance-report.json
