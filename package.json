@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test:functional": "cucumber-js",
-    "test:performance": "artillery run perf/artillery.yml"
+    "test:performance": "artillery run perf/artillery.yml --output report.json && npm run report -- report.json",
+    "report": "ts-node perf/generate-report.ts"
   },
   "repository": {
     "type": "git",
