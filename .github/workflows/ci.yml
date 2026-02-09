@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Start Application
+      run: docker-compose up -d --build
+
+    - name: Wait for Services
+      run: |
+        echo "Waiting for frontend (3000) and backend (3001)..."
+        timeout=60
+        while ! curl --output /dev/null --silent --head --fail http://localhost:3000 || ! curl --output /dev/null --silent --head --fail http://localhost:3001/process; do
+          if [ $timeout -le 0 ]; then
+            echo "Timeout waiting for services"
+            exit 1
+          fi
+          printf '.'
+          sleep 2
+          timeout=$((timeout-2))
+        done
+        echo "Services are ready!"
+
+    - name: Run Functional Tests
+      run: npm run test:functional
+
+    - name: Run Performance Tests
+      run: npm run test:performance -- --output performance-report.json
+
+    - name: Generate Performance Report
+      if: always()
+      run: npx artillery report performance-report.json --output performance-report.html
+
+    - name: Upload Test Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports
+        path: |
+          cucumber-report.html
+          performance-report.html
