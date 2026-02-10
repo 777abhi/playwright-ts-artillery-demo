@@ -44,7 +44,19 @@ jobs:
         done
         echo "Services are ready!"
 
+    - name: LambdaTest Tunnel
+      uses: LambdaTest/LambdaTest-tunnel-action@v1
+      id: lambdatest_tunnel
+      with:
+        user: ${{ secrets.LT_USERNAME }}
+        accessKey: ${{ secrets.LT_ACCESS_KEY }}
+        tunnelName: 'ci-tunnel'
+
     - name: Run Functional Tests
+      env:
+        LT_USERNAME: ${{ secrets.LT_USERNAME }}
+        LT_ACCESS_KEY: ${{ secrets.LT_ACCESS_KEY }}
+        LT_TUNNEL_NAME: 'ci-tunnel'
       run: npm run test:functional
 
     - name: Run Performance Tests

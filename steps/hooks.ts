@@ -7,7 +7,29 @@ setDefaultTimeout(60 * 1000);
 let browser: Browser;
 
 BeforeAll(async function () {
-  browser = await chromium.launch({ headless: true });
+  if (process.env.LT_USERNAME && process.env.LT_ACCESS_KEY) {
+    const capabilities = {
+      'browserName': 'Chrome',
+      'browserVersion': 'latest',
+      'LT:Options': {
+        'platform': 'Windows 10',
+        'build': 'Playwright Build',
+        'name': 'Playwright Test',
+        'user': process.env.LT_USERNAME,
+        'accessKey': process.env.LT_ACCESS_KEY,
+        'network': true,
+        'video': true,
+        'console': true,
+        'tunnel': true,
+        'tunnelName': process.env.LT_TUNNEL_NAME || 'ci-tunnel'
+      }
+    };
+    const cdpUrl = `wss://cdp.lambdatest.com/playwright?capabilities=${encodeURIComponent(JSON.stringify(capabilities))}`;
+    console.log('Connecting to LambdaTest CDP...');
+    browser = await chromium.connect(cdpUrl);
+  } else {
+    browser = await chromium.launch({ headless: true });
+  }
 });
 
 AfterAll(async function () {
