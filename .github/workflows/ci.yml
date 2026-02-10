@@ -49,15 +49,24 @@ jobs:
         curl -O https://downloads.lambdatest.com/tunnel/v3/linux/64bit/LT_Linux.zip
         unzip LT_Linux.zip
 
-    - name: Start LambdaTest Tunnel
+    - name: Start Tunnel and Run Functional Tests
+      env:
+        LT_USERNAME: ${{ secrets.LT_USERNAME }}
+        LT_ACCESS_KEY: ${{ secrets.LT_ACCESS_KEY }}
+        LT_TUNNEL_NAME: 'ci-tunnel'
       run: |
-        ./LT --user ${{ secrets.LT_USERNAME }} --key ${{ secrets.LT_ACCESS_KEY }} --tunnelName "ci-tunnel" > tunnel.log 2>&1 &
+        # Start tunnel in background
+        ./LT --user $LT_USERNAME --key $LT_ACCESS_KEY --tunnelName "ci-tunnel" > tunnel.log 2>&1 &
+        TUNNEL_PID=$!
+
+        # Wait for tunnel to start
         echo "Waiting for tunnel to start..."
         timeout=60
         while ! grep -q "Tunnel started" tunnel.log; do
           if [ $timeout -le 0 ]; then
             echo "Timeout waiting for tunnel"
             cat tunnel.log
+            kill $TUNNEL_PID || true
             exit 1
           fi
           printf '.'
@@ -66,12 +75,11 @@ jobs:
         done
         echo "Tunnel started!"
 
-    - name: Run Functional Tests
-      env:
-        LT_USERNAME: ${{ secrets.LT_USERNAME }}
-        LT_ACCESS_KEY: ${{ secrets.LT_ACCESS_KEY }}
-        LT_TUNNEL_NAME: 'ci-tunnel'
-      run: npm run test:functional
+        # Ensure tunnel is killed on exit
+        trap 'kill $TUNNEL_PID' EXIT
+
+        # Run Functional Tests
+        npm run test:functional
 
     - name: Run Performance Tests
       run: npm run test:performance -- --output performance-report.json
