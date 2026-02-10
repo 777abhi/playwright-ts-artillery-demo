@@ -45,7 +45,7 @@ jobs:
         echo "Services are ready!"
 
     - name: LambdaTest Tunnel
-      uses: LambdaTest/LambdaTest-tunnel-action@v1
+      uses: LambdaTest/LambdaTest-tunnel-action@v2
       id: lambdatest_tunnel
       with:
         user: ${{ secrets.LT_USERNAME }}
