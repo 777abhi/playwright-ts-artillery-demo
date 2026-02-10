@@ -44,13 +44,27 @@ jobs:
         done
         echo "Services are ready!"
 
-    - name: LambdaTest Tunnel
-      uses: LambdaTest/LambdaTest-tunnel-action@v2
-      id: lambdatest_tunnel
-      with:
-        user: ${{ secrets.LT_USERNAME }}
-        accessKey: ${{ secrets.LT_ACCESS_KEY }}
-        tunnelName: 'ci-tunnel'
+    - name: Download LambdaTest Tunnel Binary
+      run: |
+        curl -O https://downloads.lambdatest.com/tunnel/v3/linux/64bit/LT_Linux.zip
+        unzip LT_Linux.zip
+
+    - name: Start LambdaTest Tunnel
+      run: |
+        ./LT --user ${{ secrets.LT_USERNAME }} --key ${{ secrets.LT_ACCESS_KEY }} --tunnelName "ci-tunnel" > tunnel.log 2>&1 &
+        echo "Waiting for tunnel to start..."
+        timeout=60
+        while ! grep -q "Tunnel started" tunnel.log; do
+          if [ $timeout -le 0 ]; then
+            echo "Timeout waiting for tunnel"
+            cat tunnel.log
+            exit 1
+          fi
+          printf '.'
+          sleep 2
+          timeout=$((timeout-2))
+        done
+        echo "Tunnel started!"
 
     - name: Run Functional Tests
       env:
