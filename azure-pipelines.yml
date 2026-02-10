@@ -1,0 +1,89 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Install Node.js'
+
+- script: npm ci
+  displayName: 'Install dependencies'
+
+- script: npx playwright install --with-deps
+  displayName: 'Install Playwright Browsers'
+
+- script: docker compose up -d --build
+  displayName: 'Start Application'
+
+- script: |
+    echo "Waiting for frontend (3000) and backend (3001)..."
+    timeout=60
+    while ! curl --output /dev/null --silent --head --fail http://localhost:3000 || ! curl --output /dev/null --silent --head --fail http://localhost:3001/process; do
+      if [ $timeout -le 0 ]; then
+        echo "Timeout waiting for services"
+        exit 1
+      fi
+      printf '.'
+      sleep 2
+      timeout=$((timeout-2))
+    done
+    echo "Services are ready!"
+  displayName: 'Wait for Services'
+
+- script: |
+    curl -O https://downloads.lambdatest.com/tunnel/v3/linux/64bit/LT_Linux.zip
+    unzip LT_Linux.zip
+  displayName: 'Download LambdaTest Tunnel Binary'
+
+- script: |
+    # Start the tunnel in background
+    ./LT --user $LT_USERNAME --key $LT_ACCESS_KEY --tunnelName "azure-tunnel" > tunnel.log 2>&1 &
+    TUNNEL_PID=$!
+
+    # Wait for tunnel to start
+    echo "Waiting for tunnel to start..."
+    timeout=60
+    while ! grep -q "Tunnel started" tunnel.log; do
+      if [ $timeout -le 0 ]; then
+        echo "Timeout waiting for tunnel"
+        cat tunnel.log
+        kill $TUNNEL_PID || true
+        exit 1
+      fi
+      printf '.'
+      sleep 2
+      timeout=$((timeout-2))
+    done
+    echo "Tunnel started!"
+
+    # Ensure tunnel is killed on exit
+    trap 'kill $TUNNEL_PID' EXIT
+
+    # Run Functional Tests
+    npm run test:functional
+  env:
+    LT_USERNAME: $(LT_USERNAME)
+    LT_ACCESS_KEY: $(LT_ACCESS_KEY)
+    LT_TUNNEL_NAME: 'azure-tunnel'
+  displayName: 'Start Tunnel and Run Functional Tests'
+
+- script: npm run test:performance -- --output performance-report.json
+  displayName: 'Run Performance Tests'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'cucumber-report.html'
+    artifact: 'CucumberReport'
+  condition: always()
+  displayName: 'Publish Cucumber Report'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'performance-report.json'
+    artifact: 'PerformanceReport'
+  condition: always()
+  displayName: 'Publish Performance Report'
