@@ -6,12 +6,13 @@ This is a simple web application designed for performance testing, consisting of
 
 This application allows you to simulate real-world bottlenecks via the Settings panel or API parameters.
 
-| Scenario | delay (ms) | cpuLoad (loops) | Description |
-|---|---|---|---|
-| Optimal | 0 | 0 | Base performance of the stack. |
-| DB Latency | 1500 | 0 | Simulates slow SQL queries or external API lag. |
-| CPU Bound | 100 | 10^7 | Simulates heavy data processing or encryption. |
-| Service Fail | -1 | N/A | Simulates 500 errors (when delay is negative). |
+| Scenario | delay (ms) | cpuLoad (loops) | memoryStress (MB) | Description |
+|---|---|---|---|---|
+| Optimal | 0 | 0 | 0 | Base performance of the stack. |
+| DB Latency | 1500 | 0 | 0 | Simulates slow SQL queries or external API lag. |
+| CPU Bound | 100 | 10^7 | 0 | Simulates heavy data processing or encryption. |
+| Memory Stress | 0 | 0 | 50 | Simulates high memory consumption (allocates 50MB buffer). |
+| Service Fail | -1 | N/A | N/A | Simulates 500 errors (when delay is negative). |
 
 ## Running the App
 
