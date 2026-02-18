@@ -1,7 +1,9 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import { SimulationService } from './src/services/simulation.service';
 
 const fastify: FastifyInstance = Fastify({ logger: true });
+const simulationService = new SimulationService();
 
 fastify.register(cors, {
   origin: '*'
@@ -10,35 +12,45 @@ fastify.register(cors, {
 interface ProcessQuery {
   delay?: string;
   cpuLoad?: string;
+  memoryStress?: string;
 }
 
 fastify.get<{ Querystring: ProcessQuery }>('/process', async (request, reply) => {
   const delay = parseInt(request.query.delay || '0') || 0;
   const cpuLoad = parseInt(request.query.cpuLoad || '0') || 0;
+  const memoryStress = parseInt(request.query.memoryStress || '0') || 0;
 
-  // Service Fail Simulation
-  if (delay < 0) {
-    return reply.code(500).send({ error: 'Internal Server Error simulated' });
-  }
-
-  const startTime = Date.now();
-
-  // Simulate CPU Load
-  if (cpuLoad > 0) {
-    let result = 0;
-    for (let i = 0; i < cpuLoad; i++) {
-      result += Math.sqrt(i) * Math.sqrt(i + 1);
+  try {
+    // Service Fail Simulation: Fail fast if delay is negative
+    if (delay < 0) {
+      await simulationService.simulateDelay(delay);
     }
+
+    const startTime = Date.now();
+
+    // Simulate Memory Stress
+    // We hold the reference to the buffer to prevent GC during the request
+    const memoryBuffer = simulationService.simulateMemoryStress(memoryStress);
+
+    // Simulate CPU Load
+    simulationService.simulateCpuLoad(cpuLoad);
+
+    // Simulate Delay (only if positive)
+    if (delay > 0) {
+      await simulationService.simulateDelay(delay);
+    }
+
+    const duration = Date.now() - startTime;
+
+    return { success: true, delay, cpuLoad, memoryStress, duration };
+
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Internal Server Error simulated') {
+      return reply.code(500).send({ error: 'Internal Server Error simulated' });
+    }
+    fastify.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error' });
   }
-
-  // Simulate Delay
-  if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  const duration = Date.now() - startTime;
-
-  return { success: true, delay, cpuLoad, duration };
 });
 
 const start = async () => {
