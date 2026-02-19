@@ -7,6 +7,7 @@ const presetIds: Record<string, string> = {
   'DB Latency': 'preset-db-latency',
   'CPU Bound': 'preset-cpu-bound',
   'Memory Stress': 'preset-memory-stress',
+  'Service Fail': 'preset-service-fail',
 };
 
 const inputIds: Record<string, string> = {
