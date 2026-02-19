@@ -14,6 +14,10 @@ This application allows you to simulate real-world bottlenecks via the Settings 
 | Memory Stress | 0 | 0 | 50 | Simulates high memory consumption (allocates 50MB buffer). |
 | Service Fail | -1 | N/A | N/A | Simulates 500 errors (when delay is negative). |
 
+### Simulation Presets
+
+The frontend includes "Preset Buttons" for common scenarios (Optimal, DB Latency, CPU Bound, Memory Stress). Simply click a button to populate the simulation settings instantly.
+
 ## Running the App
 
 To start both the frontend and backend services:

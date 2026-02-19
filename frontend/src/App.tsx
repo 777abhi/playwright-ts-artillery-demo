@@ -1,13 +1,32 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
+interface Config {
+  delay: number;
+  cpuLoad: number;
+  memoryStress: number;
+}
+
+interface Result extends Config {
+  success?: boolean;
+  duration?: number;
+  error?: string;
+}
+
+const PRESETS: Record<string, Config> = {
+  'Optimal': { delay: 0, cpuLoad: 0, memoryStress: 0 },
+  'DB Latency': { delay: 1500, cpuLoad: 0, memoryStress: 0 },
+  'CPU Bound': { delay: 100, cpuLoad: 10000000, memoryStress: 0 },
+  'Memory Stress': { delay: 0, cpuLoad: 0, memoryStress: 50 },
+}
 
 function App() {
-  const [delay, setDelay] = useState(0)
-  const [cpuLoad, setCpuLoad] = useState(0)
-  const [memoryStress, setMemoryStress] = useState(0)
-  const [config, setConfig] = useState({ delay: 0, cpuLoad: 0, memoryStress: 0 })
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [savedMessage, setSavedMessage] = useState('')
+  const [delay, setDelay] = useState<number>(0)
+  const [cpuLoad, setCpuLoad] = useState<number>(0)
+  const [memoryStress, setMemoryStress] = useState<number>(0)
+  const [config, setConfig] = useState<Config>({ delay: 0, cpuLoad: 0, memoryStress: 0 })
+  const [result, setResult] = useState<Result | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [savedMessage, setSavedMessage] = useState<string>('')
 
   const handleSave = () => {
     setConfig({ delay, cpuLoad, memoryStress })
@@ -15,16 +34,24 @@ function App() {
     setTimeout(() => setSavedMessage(''), 2000)
   }
 
+  const applyPreset = (preset: Config) => {
+    setDelay(preset.delay)
+    setCpuLoad(preset.cpuLoad)
+    setMemoryStress(preset.memoryStress)
+    setConfig(preset)
+    setSavedMessage('')
+  }
+
   const handleTrigger = async () => {
     setLoading(true)
     setResult(null)
     try {
       const response = await fetch(`http://localhost:3001/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}`)
-      const data = await response.json()
+      const data: Result = await response.json()
       setResult(data)
     } catch (error) {
       console.error(error)
-      setResult({ error: 'Failed' })
+      setResult({ delay: 0, cpuLoad: 0, memoryStress: 0, error: 'Failed' })
     } finally {
       setLoading(false)
     }
@@ -33,6 +60,22 @@ function App() {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Performance Simulation</h1>
+
+      <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
+        <h2>Presets</h2>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {Object.entries(PRESETS).map(([name, config]) => (
+            <button
+              key={name}
+              id={`preset-${name.toLowerCase().replace(/ /g, '-')}`}
+              onClick={() => applyPreset(config)}
+              style={{ padding: '5px 10px' }}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
         <h2>Settings</h2>
