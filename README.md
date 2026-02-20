@@ -16,7 +16,7 @@ This application allows you to simulate real-world bottlenecks via the Settings 
 
 ### Simulation Presets
 
-The frontend includes "Preset Buttons" for common scenarios (Optimal, DB Latency, CPU Bound, Memory Stress). Simply click a button to populate the simulation settings instantly.
+The frontend includes "Preset Buttons" for common scenarios (Optimal, DB Latency, CPU Bound, Memory Stress, Service Fail). Simply click a button to populate the simulation settings instantly.
 
 ## Running the App
 
