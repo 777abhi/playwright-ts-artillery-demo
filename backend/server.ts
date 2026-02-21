@@ -13,17 +13,19 @@ interface ProcessQuery {
   delay?: string;
   cpuLoad?: string;
   memoryStress?: string;
+  jitter?: string;
 }
 
 fastify.get<{ Querystring: ProcessQuery }>('/process', async (request, reply) => {
   const delay = parseInt(request.query.delay || '0') || 0;
   const cpuLoad = parseInt(request.query.cpuLoad || '0') || 0;
   const memoryStress = parseInt(request.query.memoryStress || '0') || 0;
+  const jitter = parseInt(request.query.jitter || '0') || 0;
 
   try {
     // Service Fail Simulation: Fail fast if delay is negative
     if (delay < 0) {
-      await simulationService.simulateDelay(delay);
+      await simulationService.simulateDelay(delay, jitter);
     }
 
     const startTime = Date.now();
@@ -35,14 +37,14 @@ fastify.get<{ Querystring: ProcessQuery }>('/process', async (request, reply) =>
     // Simulate CPU Load
     simulationService.simulateCpuLoad(cpuLoad);
 
-    // Simulate Delay (only if positive)
-    if (delay > 0) {
-      await simulationService.simulateDelay(delay);
+    // Simulate Delay (only if positive delay or jitter)
+    if (delay > 0 || jitter > 0) {
+      await simulationService.simulateDelay(delay, jitter);
     }
 
     const duration = Date.now() - startTime;
 
-    return { success: true, delay, cpuLoad, memoryStress, duration };
+    return { success: true, delay, cpuLoad, memoryStress, jitter, duration };
 
   } catch (error) {
     if (error instanceof Error && error.message === 'Internal Server Error simulated') {

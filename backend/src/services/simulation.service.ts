@@ -1,10 +1,18 @@
 export class SimulationService {
-  async simulateDelay(ms: number): Promise<void> {
+  async simulateDelay(ms: number, jitter: number = 0): Promise<void> {
+    let effectiveDelay = ms;
+
+    if (jitter > 0) {
+      const variation = Math.random() * jitter * 2 - jitter;
+      effectiveDelay = Math.floor(ms + variation);
+      effectiveDelay = Math.max(0, effectiveDelay);
+    }
+
     if (ms < 0) {
       throw new Error('Internal Server Error simulated');
     }
-    if (ms > 0) {
-      await new Promise(resolve => setTimeout(resolve, ms));
+    if (effectiveDelay > 0) {
+      await new Promise(resolve => setTimeout(resolve, effectiveDelay));
     }
   }
 
