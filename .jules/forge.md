@@ -17,3 +17,8 @@ Constraint: Ensure all new presets are added to the configuration file and have 
 Decision: Added Jitter parameter to SimulationService and exposed via API and Frontend.
 Reasoning: To simulate real-world network instability and variable latency, providing more realistic performance testing scenarios.
 Constraint: Ensure jitter is clamped to 0 if the resulting delay is negative, but allow explicit negative delay for error simulation.
+
+## 2025-02-21 - Real-time Metrics & Fastify Hooks
+Decision: Introduced MetricsService and used Fastify Hooks (`onRequest`, `onResponse`) for global request tracking.
+Reasoning: To provide real-time visibility into application performance and decouple metrics collection from business logic.
+Constraint: Ensure metrics collection has minimal overhead. Use `WeakMap` or request decoration carefully to avoid memory leaks or type conflicts.

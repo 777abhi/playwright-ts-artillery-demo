@@ -1,12 +1,36 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import { SimulationService } from './src/services/simulation.service';
+import { MetricsService } from './src/services/metrics.service';
 
 const fastify: FastifyInstance = Fastify({ logger: true });
 const simulationService = new SimulationService();
+const metricsService = new MetricsService();
 
 fastify.register(cors, {
   origin: '*'
+});
+
+const requestStartTimes = new WeakMap<object, number>();
+
+fastify.addHook('onRequest', async (request) => {
+  requestStartTimes.set(request, Date.now());
+});
+
+fastify.addHook('onResponse', async (request, reply) => {
+  const startTime = requestStartTimes.get(request);
+  if (startTime) {
+    const duration = Date.now() - startTime;
+    // Consider 4xx as user errors, 5xx as server errors.
+    // Ideally we track success based on 2xx.
+    // But for simulation, we care if it succeeded.
+    // Let's assume < 400 is success.
+    metricsService.recordRequest(duration, reply.statusCode < 400);
+  }
+});
+
+fastify.get('/metrics', async () => {
+  return metricsService.getMetrics();
 });
 
 interface ProcessQuery {
