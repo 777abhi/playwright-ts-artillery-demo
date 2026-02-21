@@ -8,12 +8,14 @@ const presetIds: Record<string, string> = {
   'CPU Bound': 'preset-cpu-bound',
   'Memory Stress': 'preset-memory-stress',
   'Service Fail': 'preset-service-fail',
+  'Network Jitter': 'preset-network-jitter',
 };
 
 const inputIds: Record<string, string> = {
   'Delay': '#delay-input',
   'CPU Load': '#cpu-input',
   'Memory Stress': '#memory-input',
+  'Jitter': '#jitter-input',
 };
 
 When('I click the {string} preset button', async function (this: CustomWorld, presetName: string) {

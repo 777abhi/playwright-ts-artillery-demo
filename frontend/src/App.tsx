@@ -11,13 +11,14 @@ function App() {
   const [delay, setDelay] = useState<number>(0)
   const [cpuLoad, setCpuLoad] = useState<number>(0)
   const [memoryStress, setMemoryStress] = useState<number>(0)
-  const [config, setConfig] = useState<Config>({ delay: 0, cpuLoad: 0, memoryStress: 0 })
+  const [jitter, setJitter] = useState<number>(0)
+  const [config, setConfig] = useState<Config>({ delay: 0, cpuLoad: 0, memoryStress: 0, jitter: 0 })
   const [result, setResult] = useState<Result | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [savedMessage, setSavedMessage] = useState<string>('')
 
   const handleSave = () => {
-    setConfig({ delay, cpuLoad, memoryStress })
+    setConfig({ delay, cpuLoad, memoryStress, jitter })
     setSavedMessage('Settings saved!')
     setTimeout(() => setSavedMessage(''), 2000)
   }
@@ -26,6 +27,7 @@ function App() {
     setDelay(preset.delay)
     setCpuLoad(preset.cpuLoad)
     setMemoryStress(preset.memoryStress)
+    setJitter(preset.jitter)
     setConfig(preset)
     setSavedMessage('')
   }
@@ -34,12 +36,12 @@ function App() {
     setLoading(true)
     setResult(null)
     try {
-      const response = await fetch(`http://localhost:3001/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}`)
+      const response = await fetch(`http://localhost:3001/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`)
       const data: Result = await response.json()
       setResult(data)
     } catch (error) {
       console.error(error)
-      setResult({ delay: 0, cpuLoad: 0, memoryStress: 0, error: 'Failed' })
+      setResult({ delay: 0, cpuLoad: 0, memoryStress: 0, jitter: 0, error: 'Failed' })
     } finally {
       setLoading(false)
     }
@@ -75,6 +77,18 @@ function App() {
               type="number"
               value={delay}
               onChange={(e) => setDelay(Number(e.target.value))}
+              style={{ marginLeft: '10px' }}
+            />
+          </label>
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>
+            Jitter (ms):
+            <input
+              id="jitter-input"
+              type="number"
+              value={jitter}
+              onChange={(e) => setJitter(Number(e.target.value))}
               style={{ marginLeft: '10px' }}
             />
           </label>
@@ -117,6 +131,7 @@ function App() {
         <div className="success-message" style={{ color: 'green', border: '1px solid green', padding: '10px' }}>
           <h3>Process Completed!</h3>
           <p>Delay: {result.delay}ms</p>
+          <p>Jitter: {result.jitter}ms</p>
           <p>CPU Load: {result.cpuLoad}</p>
           <p>Memory Stress: {result.memoryStress}MB</p>
           <p>Duration: {result.duration}ms</p>

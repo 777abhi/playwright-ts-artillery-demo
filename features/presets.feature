@@ -11,3 +11,9 @@ Feature: Simulation Presets
     Given I open the performance app
     When I click the "Service Fail" preset button
     Then the "Delay" input should have value "-1"
+
+  Scenario: Use Network Jitter Preset
+    Given I open the performance app
+    When I click the "Network Jitter" preset button
+    Then the "Delay" input should have value "1000"
+    And the "Jitter" input should have value "500"

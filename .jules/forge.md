@@ -12,3 +12,8 @@ Constraint: Frontend code must remain TypeScript-only (.tsx). Ensure future feat
 Decision: Added "Service Fail" preset and extracted presets configuration.
 Reasoning: To expose the existing backend capability for 500 errors to the user and improve frontend maintainability by separating configuration from the component.
 Constraint: Ensure all new presets are added to the configuration file and have corresponding test steps.
+
+## 2025-02-16 - Network Jitter Simulation
+Decision: Added Jitter parameter to SimulationService and exposed via API and Frontend.
+Reasoning: To simulate real-world network instability and variable latency, providing more realistic performance testing scenarios.
+Constraint: Ensure jitter is clamped to 0 if the resulting delay is negative, but allow explicit negative delay for error simulation.
