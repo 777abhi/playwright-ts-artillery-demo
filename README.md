@@ -19,6 +19,15 @@ This application allows you to simulate real-world bottlenecks via the Settings 
 
 The frontend includes "Preset Buttons" for common scenarios (Optimal, DB Latency, CPU Bound, Memory Stress, Service Fail, Network Jitter). Simply click a button to populate the simulation settings instantly.
 
+## Real-time Metrics
+
+The application includes a real-time metrics dashboard on the frontend, displaying:
+- Total Requests
+- Error Rate
+- Average, Minimum, and Maximum Latency
+
+Metrics are collected by the backend and exposed via the `/metrics` endpoint.
+
 ## Running the App
 
 To start both the frontend and backend services:
@@ -32,4 +41,4 @@ docker-compose up --build
 
 ## Future Improvements
 
-- Add real-time metrics dashboard to visualize latency distribution and server load.
+- Persist metrics to a time-series database for historical analysis.

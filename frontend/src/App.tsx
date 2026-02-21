@@ -1,10 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Config, PRESETS } from './config/presets'
 
 interface Result extends Config {
   success?: boolean;
   duration?: number;
   error?: string;
+}
+
+interface Metrics {
+  totalRequests: number;
+  totalErrors: number;
+  totalLatency: number;
+  avgLatency: number;
+  minLatency: number;
+  maxLatency: number;
+  errorRate: number;
 }
 
 function App() {
@@ -16,6 +26,25 @@ function App() {
   const [result, setResult] = useState<Result | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [savedMessage, setSavedMessage] = useState<string>('')
+  const [metrics, setMetrics] = useState<Metrics | null>(null)
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/metrics')
+        if (res.ok) {
+          const data: Metrics = await res.json()
+          setMetrics(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch metrics', err)
+      }
+    }
+
+    fetchMetrics()
+    const interval = setInterval(fetchMetrics, 2000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSave = () => {
     setConfig({ delay, cpuLoad, memoryStress, jitter })
@@ -50,6 +79,20 @@ function App() {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Performance Simulation</h1>
+
+      {metrics && (
+        <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px', background: '#f9f9f9' }}>
+          <h2>Real-time Metrics</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+            <div><strong>Requests:</strong> {metrics.totalRequests}</div>
+            <div><strong>Errors:</strong> {metrics.totalErrors}</div>
+            <div><strong>Error Rate:</strong> {(metrics.errorRate * 100).toFixed(1)}%</div>
+            <div><strong>Avg Latency:</strong> {metrics.avgLatency.toFixed(0)}ms</div>
+            <div><strong>Min Latency:</strong> {metrics.minLatency}ms</div>
+            <div><strong>Max Latency:</strong> {metrics.maxLatency}ms</div>
+          </div>
+        </div>
+      )}
 
       <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
         <h2>Presets</h2>
