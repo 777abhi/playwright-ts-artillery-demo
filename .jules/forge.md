@@ -22,3 +22,8 @@ Constraint: Ensure jitter is clamped to 0 if the resulting delay is negative, bu
 Decision: Introduced MetricsService and used Fastify Hooks (`onRequest`, `onResponse`) for global request tracking.
 Reasoning: To provide real-time visibility into application performance and decouple metrics collection from business logic.
 Constraint: Ensure metrics collection has minimal overhead. Use `WeakMap` or request decoration carefully to avoid memory leaks or type conflicts.
+
+## 2025-02-22 - Reset Metrics Feature
+Decision: Exposed `DELETE /metrics` endpoint and added Reset button in frontend.
+Reasoning: To allow users to clear accumulated metrics for fresh test runs without restarting the server, improving testing workflow.
+Constraint: Ensure metrics reset is atomic or handled gracefully during concurrent requests.

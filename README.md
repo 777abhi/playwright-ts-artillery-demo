@@ -26,7 +26,7 @@ The application includes a real-time metrics dashboard on the frontend, displayi
 - Error Rate
 - Average, Minimum, and Maximum Latency
 
-Metrics are collected by the backend and exposed via the `/metrics` endpoint.
+Metrics are collected by the backend and exposed via the `/metrics` endpoint. You can reset these metrics at any time using the "Reset Metrics" button in the dashboard.
 
 ## Running the App
 
@@ -42,3 +42,4 @@ docker-compose up --build
 ## Future Improvements
 
 - Persist metrics to a time-series database for historical analysis.
+- Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.

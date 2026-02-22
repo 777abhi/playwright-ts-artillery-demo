@@ -33,6 +33,11 @@ fastify.get('/metrics', async () => {
   return metricsService.getMetrics();
 });
 
+fastify.delete('/metrics', async () => {
+  metricsService.reset();
+  return { success: true };
+});
+
 interface ProcessQuery {
   delay?: string;
   cpuLoad?: string;
