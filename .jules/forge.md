@@ -27,3 +27,8 @@ Constraint: Ensure metrics collection has minimal overhead. Use `WeakMap` or req
 Decision: Exposed `DELETE /metrics` endpoint and added Reset button in frontend.
 Reasoning: To allow users to clear accumulated metrics for fresh test runs without restarting the server, improving testing workflow.
 Constraint: Ensure metrics reset is atomic or handled gracefully during concurrent requests.
+
+## 2025-02-23 - Frontend Metrics Visualization
+Decision: Implemented client-side metrics history buffer and visualization using Recharts. Added Vitest/JSDOM for frontend component testing.
+Reasoning: To provide immediate visual feedback on performance trends without introducing backend state complexity yet.
+Constraint: History is transient (lost on refresh). Future backend persistence is required for long-term analysis.

@@ -28,6 +28,8 @@ The application includes a real-time metrics dashboard on the frontend, displayi
 
 Metrics are collected by the backend and exposed via the `/metrics` endpoint. You can reset these metrics at any time using the "Reset Metrics" button in the dashboard.
 
+The dashboard also features a **Real-time Metrics History** chart, visualizing latency and error rate trends over the last 30 data points.
+
 ## Running the App
 
 To start both the frontend and backend services:
@@ -43,3 +45,4 @@ docker-compose up --build
 
 - Persist metrics to a time-series database for historical analysis.
 - Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
+- Persist historical metrics to backend/database to support long-term trend analysis.

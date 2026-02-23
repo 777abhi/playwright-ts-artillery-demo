@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Config, PRESETS } from './config/presets'
+import MetricsChart, { MetricPoint } from './components/MetricsChart'
 
 interface Result extends Config {
   success?: boolean;
@@ -30,6 +31,7 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false)
   const [savedMessage, setSavedMessage] = useState<string>('')
   const [metrics, setMetrics] = useState<Metrics | null>(null)
+  const [metricsHistory, setMetricsHistory] = useState<MetricPoint[]>([])
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -38,6 +40,21 @@ function App() {
         if (res.ok) {
           const data: Metrics = await res.json()
           setMetrics(data)
+
+          setMetricsHistory(prev => {
+            const now = new Date()
+            const timeString = now.toLocaleTimeString([], { hour12: false })
+            const newPoint: MetricPoint = {
+              timestamp: timeString,
+              avgLatency: data.avgLatency,
+              errorRate: data.errorRate
+            }
+            const newHistory = [...prev, newPoint]
+            if (newHistory.length > 30) {
+              return newHistory.slice(newHistory.length - 30)
+            }
+            return newHistory
+          })
         }
       } catch (err) {
         console.error('Failed to fetch metrics', err)
@@ -83,6 +100,7 @@ function App() {
     try {
       await fetch(`${API_BASE_URL}/metrics`, { method: 'DELETE' })
       setMetrics(prev => prev ? { ...prev, totalRequests: 0, totalErrors: 0, totalLatency: 0, avgLatency: 0, minLatency: 0, maxLatency: 0, errorRate: 0 } : null)
+      setMetricsHistory([])
     } catch (error) {
       console.error('Failed to reset metrics', error)
     }
@@ -111,6 +129,9 @@ function App() {
             <div><strong>Avg Latency:</strong> {metrics.avgLatency.toFixed(0)}ms</div>
             <div><strong>Min Latency:</strong> {metrics.minLatency}ms</div>
             <div><strong>Max Latency:</strong> {metrics.maxLatency}ms</div>
+          </div>
+          <div style={{ marginTop: '20px' }}>
+             <MetricsChart data={metricsHistory} />
           </div>
         </div>
       )}
