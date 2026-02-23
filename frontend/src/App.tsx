@@ -17,6 +17,9 @@ interface Metrics {
   errorRate: number;
 }
 
+// Define API base URL constant for easy configuration
+const API_BASE_URL = 'http://localhost:3001';
+
 function App() {
   const [delay, setDelay] = useState<number>(0)
   const [cpuLoad, setCpuLoad] = useState<number>(0)
@@ -31,7 +34,7 @@ function App() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const res = await fetch('http://localhost:3001/metrics')
+        const res = await fetch(`${API_BASE_URL}/metrics`)
         if (res.ok) {
           const data: Metrics = await res.json()
           setMetrics(data)
@@ -65,7 +68,7 @@ function App() {
     setLoading(true)
     setResult(null)
     try {
-      const response = await fetch(`http://localhost:3001/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`)
+      const response = await fetch(`${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`)
       const data: Result = await response.json()
       setResult(data)
     } catch (error) {
@@ -76,13 +79,31 @@ function App() {
     }
   }
 
+  const resetMetrics = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/metrics`, { method: 'DELETE' })
+      setMetrics(prev => prev ? { ...prev, totalRequests: 0, totalErrors: 0, totalLatency: 0, avgLatency: 0, minLatency: 0, maxLatency: 0, errorRate: 0 } : null)
+    } catch (error) {
+      console.error('Failed to reset metrics', error)
+    }
+  }
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Performance Simulation</h1>
 
       {metrics && (
         <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px', background: '#f9f9f9' }}>
-          <h2>Real-time Metrics</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h2 style={{ margin: 0 }}>Real-time Metrics</h2>
+            <button
+              id="reset-metrics-button"
+              onClick={resetMetrics}
+              style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px' }}
+            >
+              Reset Metrics
+            </button>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
             <div><strong>Requests:</strong> {metrics.totalRequests}</div>
             <div><strong>Errors:</strong> {metrics.totalErrors}</div>
