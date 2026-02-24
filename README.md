@@ -28,7 +28,7 @@ The application includes a real-time metrics dashboard on the frontend, displayi
 
 Metrics are collected by the backend and exposed via the `/metrics` endpoint. You can reset these metrics at any time using the "Reset Metrics" button in the dashboard.
 
-The dashboard also features a **Real-time Metrics History** chart, visualizing latency and error rate trends over the last 30 data points.
+The dashboard also features a **Real-time Metrics History** chart, visualizing latency and error rate trends over the last 30 data points. This history is persisted in the backend (in-memory) and served via the API, ensuring consistency across page reloads.
 
 ## Running the App
 
@@ -43,6 +43,6 @@ docker-compose up --build
 
 ## Future Improvements
 
-- Persist metrics to a time-series database for historical analysis.
+- Persist metrics to a persistent time-series database (e.g., Prometheus, InfluxDB) for long-term historical analysis.
 - Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
-- Persist historical metrics to backend/database to support long-term trend analysis.
+- Add authentication to secure the simulation control panel and metrics endpoints.

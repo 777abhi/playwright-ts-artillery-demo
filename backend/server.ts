@@ -29,8 +29,25 @@ fastify.addHook('onResponse', async (request, reply) => {
   }
 });
 
+let snapshotInterval: NodeJS.Timeout;
+
+fastify.addHook('onReady', async () => {
+  snapshotInterval = setInterval(() => {
+    metricsService.snapshot();
+  }, 2000);
+});
+
+fastify.addHook('onClose', async () => {
+  if (snapshotInterval) {
+    clearInterval(snapshotInterval);
+  }
+});
+
 fastify.get('/metrics', async () => {
-  return metricsService.getMetrics();
+  return {
+    ...metricsService.getMetrics(),
+    history: metricsService.getHistory(),
+  };
 });
 
 fastify.delete('/metrics', async () => {

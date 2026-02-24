@@ -16,6 +16,11 @@ interface Metrics {
   minLatency: number;
   maxLatency: number;
   errorRate: number;
+  history: {
+    timestamp: number;
+    avgLatency: number;
+    errorRate: number;
+  }[];
 }
 
 // Define API base URL constant for easy configuration
@@ -41,20 +46,14 @@ function App() {
           const data: Metrics = await res.json()
           setMetrics(data)
 
-          setMetricsHistory(prev => {
-            const now = new Date()
-            const timeString = now.toLocaleTimeString([], { hour12: false })
-            const newPoint: MetricPoint = {
-              timestamp: timeString,
-              avgLatency: data.avgLatency,
-              errorRate: data.errorRate
-            }
-            const newHistory = [...prev, newPoint]
-            if (newHistory.length > 30) {
-              return newHistory.slice(newHistory.length - 30)
-            }
-            return newHistory
-          })
+          if (data.history) {
+            const formattedHistory: MetricPoint[] = data.history.map(point => ({
+              timestamp: new Date(point.timestamp).toLocaleTimeString([], { hour12: false }),
+              avgLatency: point.avgLatency,
+              errorRate: point.errorRate
+            }));
+            setMetricsHistory(formattedHistory);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch metrics', err)
@@ -99,7 +98,7 @@ function App() {
   const resetMetrics = async () => {
     try {
       await fetch(`${API_BASE_URL}/metrics`, { method: 'DELETE' })
-      setMetrics(prev => prev ? { ...prev, totalRequests: 0, totalErrors: 0, totalLatency: 0, avgLatency: 0, minLatency: 0, maxLatency: 0, errorRate: 0 } : null)
+      setMetrics(prev => prev ? { ...prev, totalRequests: 0, totalErrors: 0, totalLatency: 0, avgLatency: 0, minLatency: 0, maxLatency: 0, errorRate: 0, history: [] } : null)
       setMetricsHistory([])
     } catch (error) {
       console.error('Failed to reset metrics', error)
