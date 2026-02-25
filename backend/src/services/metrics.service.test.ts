@@ -63,4 +63,32 @@ describe('MetricsService', () => {
     const metrics = service.getMetrics();
     expect(metrics.totalRequests).toBe(0);
   });
+
+  it('should record snapshots in history', () => {
+    service.recordRequest(100, true);
+
+    service.snapshot();
+
+    const history = service.getHistory();
+    expect(history.length).toBe(1);
+    expect(history[0].avgLatency).toBe(100);
+    expect(history[0].timestamp).toBeDefined();
+  });
+
+  it('should limit history to 30 items', () => {
+    for (let i = 0; i < 35; i++) {
+      service.recordRequest(100, true);
+      service.snapshot();
+    }
+    const history = service.getHistory();
+    expect(history.length).toBe(30);
+  });
+
+  it('should reset history', () => {
+    service.recordRequest(100, true);
+    service.snapshot();
+    service.reset();
+    const history = service.getHistory();
+    expect(history.length).toBe(0);
+  });
 });

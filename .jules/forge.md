@@ -32,3 +32,8 @@ Constraint: Ensure metrics reset is atomic or handled gracefully during concurre
 Decision: Implemented client-side metrics history buffer and visualization using Recharts. Added Vitest/JSDOM for frontend component testing.
 Reasoning: To provide immediate visual feedback on performance trends without introducing backend state complexity yet.
 Constraint: History is transient (lost on refresh). Future backend persistence is required for long-term analysis.
+
+## 2025-02-24 - Persist Metrics History
+Decision: Moved metrics history buffer from Frontend state to Backend `MetricsService` and exposed via API.
+Reasoning: To ensure metrics history is persistent across page reloads and consistent for multiple clients, addressing the limitation of transient frontend history.
+Constraint: History is currently in-memory and capped at 30 items. Ensure `setInterval` for snapshots is managed correctly to avoid resource leaks (e.g., using Fastify hooks).
