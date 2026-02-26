@@ -22,12 +22,21 @@ export class MetricsService {
   private maxLatency: number = 0;
   private history: MetricPoint[] = [];
 
+  // Interval metrics for windowed history
+  private intervalRequests: number = 0;
+  private intervalErrors: number = 0;
+  private intervalLatency: number = 0;
+
   recordRequest(duration: number, success: boolean): void {
     this.totalRequests++;
     this.totalLatency += duration;
 
+    this.intervalRequests++;
+    this.intervalLatency += duration;
+
     if (!success) {
       this.totalErrors++;
+      this.intervalErrors++;
     }
 
     if (this.totalRequests === 1) {
@@ -55,17 +64,24 @@ export class MetricsService {
   }
 
   snapshot(): void {
-    const metrics = this.getMetrics();
+    const avgLatency = this.intervalRequests > 0 ? this.intervalLatency / this.intervalRequests : 0;
+    const errorRate = this.intervalRequests > 0 ? this.intervalErrors / this.intervalRequests : 0;
+
     const point: MetricPoint = {
       timestamp: Date.now(),
-      avgLatency: metrics.avgLatency,
-      errorRate: metrics.errorRate,
+      avgLatency,
+      errorRate,
     };
 
     this.history.push(point);
     if (this.history.length > 30) {
       this.history.shift();
     }
+
+    // Reset interval metrics
+    this.intervalRequests = 0;
+    this.intervalErrors = 0;
+    this.intervalLatency = 0;
   }
 
   getHistory(): MetricPoint[] {
@@ -79,5 +95,8 @@ export class MetricsService {
     this.minLatency = 0;
     this.maxLatency = 0;
     this.history = [];
+    this.intervalRequests = 0;
+    this.intervalErrors = 0;
+    this.intervalLatency = 0;
   }
 }

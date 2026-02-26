@@ -37,3 +37,8 @@ Constraint: History is transient (lost on refresh). Future backend persistence i
 Decision: Moved metrics history buffer from Frontend state to Backend `MetricsService` and exposed via API.
 Reasoning: To ensure metrics history is persistent across page reloads and consistent for multiple clients, addressing the limitation of transient frontend history.
 Constraint: History is currently in-memory and capped at 30 items. Ensure `setInterval` for snapshots is managed correctly to avoid resource leaks (e.g., using Fastify hooks).
+
+## 2026-02-25 - Windowed Metrics History
+Decision: Refactored `MetricsService` to calculate history snapshots using interval-specific data instead of global averages.
+Reasoning: To provide a true "real-time" visualization of performance spikes and drops, which were previously obscured by the smoothing effect of cumulative averages.
+Constraint: `getMetrics()` continues to return global statistics for the summary dashboard.

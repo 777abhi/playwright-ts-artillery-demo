@@ -91,4 +91,19 @@ describe('MetricsService', () => {
     const history = service.getHistory();
     expect(history.length).toBe(0);
   });
+
+  it('should reflect interval metrics in history', () => {
+    service.recordRequest(100, true);
+    service.snapshot(); // History[0]: 100ms
+
+    // In global metrics, if we add 300ms, avg becomes (100+300)/2 = 200ms.
+    // In windowed metrics, it should be 300ms for the second interval.
+    service.recordRequest(300, true);
+    service.snapshot(); // History[1]: Should be 300ms
+
+    const history = service.getHistory();
+    expect(history.length).toBe(2);
+    expect(history[0].avgLatency).toBe(100);
+    expect(history[1].avgLatency).toBe(300);
+  });
 });
