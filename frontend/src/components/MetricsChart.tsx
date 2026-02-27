@@ -13,6 +13,7 @@ import {
 export interface MetricPoint {
   timestamp: string;
   avgLatency: number;
+  p95Latency: number;
   errorRate: number;
 }
 
@@ -41,6 +42,7 @@ const MetricsChart: React.FC<MetricsChartProps> = ({ data }) => {
           <Tooltip />
           <Legend />
           <Line yAxisId="left" type="monotone" dataKey="avgLatency" stroke="#8884d8" activeDot={{ r: 8 }} name="Avg Latency" />
+          <Line yAxisId="left" type="monotone" dataKey="p95Latency" stroke="#ff7300" name="P95 Latency" />
           <Line yAxisId="right" type="monotone" dataKey="errorRate" stroke="#82ca9d" name="Error Rate" />
         </LineChart>
       </ResponsiveContainer>

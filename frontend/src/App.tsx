@@ -19,6 +19,7 @@ interface Metrics {
   history: {
     timestamp: number;
     avgLatency: number;
+    p95Latency: number;
     errorRate: number;
   }[];
 }
@@ -50,6 +51,7 @@ function App() {
             const formattedHistory: MetricPoint[] = data.history.map(point => ({
               timestamp: new Date(point.timestamp).toLocaleTimeString([], { hour12: false }),
               avgLatency: point.avgLatency,
+              p95Latency: point.p95Latency,
               errorRate: point.errorRate
             }));
             setMetricsHistory(formattedHistory);

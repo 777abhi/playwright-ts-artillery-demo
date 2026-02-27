@@ -28,7 +28,12 @@ The application includes a real-time metrics dashboard on the frontend, displayi
 
 Metrics are collected by the backend and exposed via the `/metrics` endpoint. You can reset these metrics at any time using the "Reset Metrics" button in the dashboard.
 
-The dashboard also features a **Real-time Metrics History** chart, visualizing latency and error rate trends over the last 30 data points. The history data points represent the average latency and error rate *during that specific 2-second snapshot window*, providing a precise view of immediate performance changes rather than a smoothed global average. This history is persisted in the backend (in-memory) and served via the API, ensuring consistency across page reloads.
+The dashboard also features a **Real-time Metrics History** chart, visualizing performance trends over the last 30 data points (2-second intervals).
+- **Avg Latency:** The average latency during the 2-second snapshot window.
+- **P95 Latency:** The 95th percentile latency during the 2-second snapshot window. This helps identify tail latency issues that averages might hide.
+- **Error Rate:** The percentage of failed requests during the 2-second snapshot window.
+
+This history is persisted in the backend (in-memory) and served via the API, ensuring consistency across page reloads.
 
 ## Running the App
 
@@ -47,3 +52,4 @@ docker-compose up --build
 - Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
+- Implement T-Digest or HDR Histogram for efficient high-volume percentile calculation (currently uses sorting on interval buffer).
