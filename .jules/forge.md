@@ -47,3 +47,8 @@ Constraint: `getMetrics()` continues to return global statistics for the summary
 Decision: Replaced array-based sorting with T-Digest algorithm for P95 latency calculation in `MetricsService`.
 Reasoning: To improve memory efficiency and computation speed under high request volumes, as sorting unbounded arrays during snapshots is a bottleneck.
 Constraint: T-Digest provides approximate percentiles, which may slightly alter exact values in tests, but is highly accurate for tail percentiles.
+
+## 2026-02-28 - Websocket Metrics Streaming
+Decision: Replaced HTTP polling with WebSockets (`@fastify/websocket`) for real-time metrics streaming. Refactored server configuration into `app.ts` to allow reliable testing.
+Reasoning: To drastically reduce network overhead and improve dashboard responsiveness, completing the WebSocket architectural goal.
+Constraint: Ensure WebSocket connections are properly managed and closed to prevent memory leaks. Server startup must use `buildApp()` from `app.ts`.
