@@ -1,3 +1,5 @@
+import { TDigest } from 'tdigest';
+
 export interface Metrics {
   totalRequests: number;
   totalErrors: number;
@@ -27,7 +29,7 @@ export class MetricsService {
   private intervalRequests: number = 0;
   private intervalErrors: number = 0;
   private intervalLatency: number = 0;
-  private intervalLatencies: number[] = [];
+  private intervalDigest: TDigest = new TDigest();
 
   recordRequest(duration: number, success: boolean): void {
     this.totalRequests++;
@@ -35,7 +37,7 @@ export class MetricsService {
 
     this.intervalRequests++;
     this.intervalLatency += duration;
-    this.intervalLatencies.push(duration);
+    this.intervalDigest.push(duration);
 
     if (!success) {
       this.totalErrors++;
@@ -71,10 +73,8 @@ export class MetricsService {
     const errorRate = this.intervalRequests > 0 ? this.intervalErrors / this.intervalRequests : 0;
 
     let p95Latency = 0;
-    if (this.intervalLatencies.length > 0) {
-      this.intervalLatencies.sort((a, b) => a - b);
-      const index = Math.ceil(0.95 * this.intervalLatencies.length) - 1;
-      p95Latency = this.intervalLatencies[index];
+    if (this.intervalRequests > 0) {
+      p95Latency = this.intervalDigest.percentile(0.95) || 0;
     }
 
     const point: MetricPoint = {
@@ -93,7 +93,7 @@ export class MetricsService {
     this.intervalRequests = 0;
     this.intervalErrors = 0;
     this.intervalLatency = 0;
-    this.intervalLatencies = [];
+    this.intervalDigest = new TDigest();
   }
 
   getHistory(): MetricPoint[] {
@@ -110,6 +110,6 @@ export class MetricsService {
     this.intervalRequests = 0;
     this.intervalErrors = 0;
     this.intervalLatency = 0;
-    this.intervalLatencies = [];
+    this.intervalDigest = new TDigest();
   }
 }

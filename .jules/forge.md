@@ -42,3 +42,8 @@ Constraint: History is currently in-memory and capped at 30 items. Ensure `setIn
 Decision: Refactored `MetricsService` to calculate history snapshots using interval-specific data instead of global averages.
 Reasoning: To provide a true "real-time" visualization of performance spikes and drops, which were previously obscured by the smoothing effect of cumulative averages.
 Constraint: `getMetrics()` continues to return global statistics for the summary dashboard.
+
+## 2026-02-27 - T-Digest for Percentiles
+Decision: Replaced array-based sorting with T-Digest algorithm for P95 latency calculation in `MetricsService`.
+Reasoning: To improve memory efficiency and computation speed under high request volumes, as sorting unbounded arrays during snapshots is a bottleneck.
+Constraint: T-Digest provides approximate percentiles, which may slightly alter exact values in tests, but is highly accurate for tail percentiles.

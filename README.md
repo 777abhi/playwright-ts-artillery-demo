@@ -52,4 +52,4 @@ docker-compose up --build
 - Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
-- Implement T-Digest or HDR Histogram for efficient high-volume percentile calculation (currently uses sorting on interval buffer).
+- Implement real-time WebSockets to stream metrics instead of polling, drastically reducing overhead and improving dashboard responsiveness.
