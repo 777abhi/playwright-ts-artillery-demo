@@ -2,12 +2,14 @@ import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import { SimulationService } from './services/simulation.service';
 import { MetricsService } from './services/metrics.service';
+import { PrometheusService } from './services/prometheus.service';
 import fastifyWebsocket from '@fastify/websocket';
 
 export function buildApp(): FastifyInstance {
   const fastify = Fastify({ logger: true });
   const simulationService = new SimulationService();
   const metricsService = new MetricsService();
+  const prometheusService = new PrometheusService();
 
   fastify.register(cors, { origin: '*' });
 
@@ -22,6 +24,9 @@ export function buildApp(): FastifyInstance {
     if (startTime) {
       const duration = Date.now() - startTime;
       metricsService.recordRequest(duration, reply.statusCode < 400);
+
+      const route = request.routeOptions.url || '404_not_found';
+      prometheusService.recordRequestDuration(route, request.method, reply.statusCode, duration / 1000);
     }
   });
 
@@ -60,6 +65,7 @@ export function buildApp(): FastifyInstance {
     if (snapshotInterval) {
       clearInterval(snapshotInterval);
     }
+    prometheusService.stop();
   });
 
   fastify.get('/metrics', async () => {
@@ -72,6 +78,12 @@ export function buildApp(): FastifyInstance {
   fastify.delete('/metrics', async () => {
     metricsService.reset();
     return { success: true };
+  });
+
+  fastify.get('/metrics/prometheus', async (request, reply) => {
+    const metrics = await prometheusService.getMetrics();
+    reply.header('Content-Type', 'text/plain; version=0.0.4');
+    return reply.send(metrics);
   });
 
   interface ProcessQuery {

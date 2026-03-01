@@ -52,3 +52,8 @@ Constraint: T-Digest provides approximate percentiles, which may slightly alter 
 Decision: Replaced HTTP polling with WebSockets (`@fastify/websocket`) for real-time metrics streaming. Refactored server configuration into `app.ts` to allow reliable testing.
 Reasoning: To drastically reduce network overhead and improve dashboard responsiveness, completing the WebSocket architectural goal.
 Constraint: Ensure WebSocket connections are properly managed and closed to prevent memory leaks. Server startup must use `buildApp()` from `app.ts`.
+
+## 2026-03-01 - Prometheus Metrics Integration
+Decision: Implemented `PrometheusService` using `prom-client` and exposed `/metrics/prometheus` endpoint.
+Reasoning: To persist and provide external access to metrics (latency, errors) via a standard time-series format (Prometheus), completing a foundational step for long-term historical analysis.
+Constraint: Ensure `prom-client` registers custom metrics in its default registry properly to avoid duplicate metric errors and keep the transport layer logic isolated from formatting concerns.

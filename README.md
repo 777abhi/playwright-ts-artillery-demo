@@ -48,7 +48,7 @@ docker-compose up --build
 
 ## Future Improvements
 
-- Persist metrics to a persistent time-series database (e.g., Prometheus, InfluxDB) for long-term historical analysis.
+- Add a dedicated Grafana dashboard configuration file to instantly visualize the exposed Prometheus metrics.
 - Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
