@@ -52,4 +52,4 @@ docker-compose up --build
 - Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
-- Implement real-time WebSockets to stream metrics instead of polling, drastically reducing overhead and improving dashboard responsiveness.
+- Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.

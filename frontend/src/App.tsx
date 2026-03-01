@@ -26,6 +26,7 @@ interface Metrics {
 
 // Define API base URL constant for easy configuration
 const API_BASE_URL = 'http://localhost:3001';
+const WS_BASE_URL = 'ws://localhost:3001';
 
 function App() {
   const [delay, setDelay] = useState<number>(0)
@@ -40,32 +41,35 @@ function App() {
   const [metricsHistory, setMetricsHistory] = useState<MetricPoint[]>([])
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/metrics`)
-        if (res.ok) {
-          const data: Metrics = await res.json()
-          setMetrics(data)
+    const ws = new WebSocket(`${WS_BASE_URL}/metrics/ws`);
 
-          if (data.history) {
-            const formattedHistory: MetricPoint[] = data.history.map(point => ({
-              timestamp: new Date(point.timestamp).toLocaleTimeString([], { hour12: false }),
-              avgLatency: point.avgLatency,
-              p95Latency: point.p95Latency,
-              errorRate: point.errorRate
-            }));
-            setMetricsHistory(formattedHistory);
-          }
+    ws.onmessage = (event) => {
+      try {
+        const data: Metrics = JSON.parse(event.data);
+        setMetrics(data);
+
+        if (data.history) {
+          const formattedHistory: MetricPoint[] = data.history.map((point) => ({
+            timestamp: new Date(point.timestamp).toLocaleTimeString([], { hour12: false }),
+            avgLatency: point.avgLatency,
+            p95Latency: point.p95Latency,
+            errorRate: point.errorRate,
+          }));
+          setMetricsHistory(formattedHistory);
         }
       } catch (err) {
-        console.error('Failed to fetch metrics', err)
+        console.error('Failed to parse websocket metrics message', err);
       }
-    }
+    };
 
-    fetchMetrics()
-    const interval = setInterval(fetchMetrics, 2000)
-    return () => clearInterval(interval)
-  }, [])
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   const handleSave = () => {
     setConfig({ delay, cpuLoad, memoryStress, jitter })
