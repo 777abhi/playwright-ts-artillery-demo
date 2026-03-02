@@ -15,6 +15,24 @@ describe('App Integration', () => {
     await app.close();
   });
 
+  it('should expose prometheus metrics endpoint', async () => {
+    // Make a request to ensure we record some duration metrics
+    await app.inject({
+      method: 'GET',
+      url: '/process?delay=10'
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/metrics/prometheus'
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toMatch(/text\/plain/);
+    expect(response.body).toContain('http_request_duration_seconds');
+    expect(response.body).toContain('process_cpu_user_seconds_total');
+  });
+
   it('should stream metrics over WebSocket', async () => {
     const address = app.server.address();
     if (!address || typeof address === 'string') {
