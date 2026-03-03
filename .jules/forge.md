@@ -57,3 +57,8 @@ Constraint: Ensure WebSocket connections are properly managed and closed to prev
 Decision: Implemented `PrometheusService` using `prom-client` and exposed `/metrics/prometheus` endpoint.
 Reasoning: To persist and provide external access to metrics (latency, errors) via a standard time-series format (Prometheus), completing a foundational step for long-term historical analysis.
 Constraint: Ensure `prom-client` registers custom metrics in its default registry properly to avoid duplicate metric errors and keep the transport layer logic isolated from formatting concerns.
+
+## 2026-03-02 - OpenTelemetry Integration
+Decision: Implemented OpenTelemetry distributed tracing using `@opentelemetry/sdk-node` and auto-instrumentations.
+Reasoning: To establish a foundation for detailed request analysis and latency profiling by tracing Fastify endpoints.
+Constraint: Ensure the tracing module (`src/tracing.ts`) is imported at the absolute top of `server.ts` before `app.ts` or any other module, so the `NodeSDK` initializes before modules are required. Use `resourceFromAttributes` to construct the semantic resource properly.

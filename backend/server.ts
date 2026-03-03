@@ -1,3 +1,4 @@
+import './src/tracing';
 import { buildApp } from './src/app';
 
 const fastify = buildApp();
