@@ -49,7 +49,7 @@ docker-compose up --build
 ## Future Improvements
 
 - Add a dedicated Grafana dashboard configuration file to instantly visualize the exposed Prometheus metrics.
-- Implement distributed tracing (e.g., OpenTelemetry) for detailed request analysis.
+- Export OpenTelemetry traces to an external collector (like Jaeger or Zipkin) instead of simply the console.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
