@@ -14,8 +14,8 @@ vi.mock('@opentelemetry/auto-instrumentations-node', () => ({
   getNodeAutoInstrumentations: vi.fn().mockReturnValue([]),
 }));
 
-vi.mock('@opentelemetry/sdk-trace-node', () => ({
-  ConsoleSpanExporter: vi.fn(),
+vi.mock('@opentelemetry/exporter-trace-otlp-http', () => ({
+  OTLPTraceExporter: vi.fn(),
 }));
 
 vi.mock('@opentelemetry/resources', () => {
@@ -31,5 +31,12 @@ describe('Tracing Setup', () => {
 
     // Verify the SDK was started
     expect(sdk.start).toHaveBeenCalled();
+  });
+
+  it('should configure OTLPTraceExporter', async () => {
+    const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
+    await import('./tracing');
+
+    expect(OTLPTraceExporter).toHaveBeenCalled();
   });
 });

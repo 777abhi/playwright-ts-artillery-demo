@@ -62,3 +62,8 @@ Constraint: Ensure `prom-client` registers custom metrics in its default registr
 Decision: Implemented OpenTelemetry distributed tracing using `@opentelemetry/sdk-node` and auto-instrumentations.
 Reasoning: To establish a foundation for detailed request analysis and latency profiling by tracing Fastify endpoints.
 Constraint: Ensure the tracing module (`src/tracing.ts`) is imported at the absolute top of `server.ts` before `app.ts` or any other module, so the `NodeSDK` initializes before modules are required. Use `resourceFromAttributes` to construct the semantic resource properly.
+
+## 2026-03-03 - OpenTelemetry Jaeger Integration
+Decision: Replaced ConsoleSpanExporter with OTLPTraceExporter and added a Jaeger service in docker-compose.yml.
+Reasoning: To provide an external user interface for exploring traces visually instead of relying on the console, enabling advanced troubleshooting and latency profiling.
+Constraint: Ensure the Jaeger service starts before the backend and the OTLP exporter points to the correct endpoint (http://jaeger:4318/v1/traces).
