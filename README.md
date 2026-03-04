@@ -45,11 +45,12 @@ docker-compose up --build
 
 - **Frontend:** http://localhost:3000
 - **Backend:** http://localhost:3001
+- **Jaeger UI:** http://localhost:16686
 
 ## Future Improvements
 
 - Add a dedicated Grafana dashboard configuration file to instantly visualize the exposed Prometheus metrics.
-- Export OpenTelemetry traces to an external collector (like Jaeger or Zipkin) instead of simply the console.
+- Link traces to log lines in a unified logging platform to enable seamless switching between tracing and logging.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
