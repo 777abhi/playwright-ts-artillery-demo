@@ -67,3 +67,8 @@ Constraint: Ensure the tracing module (`src/tracing.ts`) is imported at the abso
 Decision: Replaced ConsoleSpanExporter with OTLPTraceExporter and added a Jaeger service in docker-compose.yml.
 Reasoning: To provide an external user interface for exploring traces visually instead of relying on the console, enabling advanced troubleshooting and latency profiling.
 Constraint: Ensure the Jaeger service starts before the backend and the OTLP exporter points to the correct endpoint (http://jaeger:4318/v1/traces).
+
+## 2026-03-04 - Link Traces to Log Lines
+Decision: Updated Fastify logger to dynamically extract trace context (`traceId`, `spanId`) using `@opentelemetry/api` and attach them to log lines.
+Reasoning: To enable seamless switching between tracing and logging in a unified logging platform, improving system observability and debuggability.
+Constraint: Fastify logger formatters must handle undefined spans gracefully to avoid errors when logging outside of an active span context.

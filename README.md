@@ -50,7 +50,7 @@ docker-compose up --build
 ## Future Improvements
 
 - Add a dedicated Grafana dashboard configuration file to instantly visualize the exposed Prometheus metrics.
-- Link traces to log lines in a unified logging platform to enable seamless switching between tracing and logging.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
+- Implement distributed trace sampling strategies to manage cost and performance overhead in high-throughput environments.

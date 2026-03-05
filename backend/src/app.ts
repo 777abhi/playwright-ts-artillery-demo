@@ -1,12 +1,24 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import { trace } from '@opentelemetry/api';
 import { SimulationService } from './services/simulation.service';
 import { MetricsService } from './services/metrics.service';
 import { PrometheusService } from './services/prometheus.service';
 import fastifyWebsocket from '@fastify/websocket';
 
 export function buildApp(): FastifyInstance {
-  const fastify = Fastify({ logger: true });
+  const fastify = Fastify({
+    logger: {
+      formatters: {
+        log(object: any) {
+          const span = trace.getActiveSpan();
+          if (!span) return object;
+          const { traceId, spanId } = span.spanContext();
+          return { ...object, trace_id: traceId, span_id: spanId };
+        }
+      }
+    }
+  });
   const simulationService = new SimulationService();
   const metricsService = new MetricsService();
   const prometheusService = new PrometheusService();
