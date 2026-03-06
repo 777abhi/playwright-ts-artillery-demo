@@ -46,11 +46,13 @@ docker-compose up --build
 - **Frontend:** http://localhost:3000
 - **Backend:** http://localhost:3001
 - **Jaeger UI:** http://localhost:16686
+- **Prometheus UI:** http://localhost:9090
+- **Grafana UI:** http://localhost:3002
 
 ## Future Improvements
 
-- Add a dedicated Grafana dashboard configuration file to instantly visualize the exposed Prometheus metrics.
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
 - Implement distributed trace sampling strategies to manage cost and performance overhead in high-throughput environments.
+- Implement caching layer (e.g., Redis) for frequently accessed simulation presets to reduce database/backend load.

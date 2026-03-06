@@ -72,3 +72,8 @@ Constraint: Ensure the Jaeger service starts before the backend and the OTLP exp
 Decision: Updated Fastify logger to dynamically extract trace context (`traceId`, `spanId`) using `@opentelemetry/api` and attach them to log lines.
 Reasoning: To enable seamless switching between tracing and logging in a unified logging platform, improving system observability and debuggability.
 Constraint: Fastify logger formatters must handle undefined spans gracefully to avoid errors when logging outside of an active span context.
+
+## 2026-03-05 - Grafana Dashboard Integration
+Decision: Added Prometheus and Grafana services to `docker-compose.yml` with pre-configured datasources and a Performance Dashboard.
+Reasoning: To fulfill the architectural goal of instantly visualizing the exposed Prometheus metrics, enabling real-time and historical performance monitoring without manual setup.
+Constraint: Ensure dashboard configurations (`.json`) are maintained as code and updated alongside metric changes. Port 3002 is used for Grafana to avoid conflicting with the frontend on 3000.
