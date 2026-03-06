@@ -54,5 +54,5 @@ docker-compose up --build
 - Add authentication to secure the simulation control panel and metrics endpoints.
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
-- Implement distributed trace sampling strategies to manage cost and performance overhead in high-throughput environments.
 - Implement caching layer (e.g., Redis) for frequently accessed simulation presets to reduce database/backend load.
+- Expose trace sampling configuration (ratio) directly in the UI to allow dynamic adjustment of observability overhead without restarting the service.

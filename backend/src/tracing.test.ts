@@ -2,11 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 
 // Mock the open telemetry modules before importing tracing
 vi.mock('@opentelemetry/sdk-node', () => {
+  const NodeSDKMock = vi.fn();
+  NodeSDKMock.prototype.start = vi.fn();
+  NodeSDKMock.prototype.shutdown = vi.fn().mockResolvedValue(undefined);
   return {
-    NodeSDK: class {
-      start = vi.fn();
-      shutdown = vi.fn().mockResolvedValue(undefined);
-    },
+    NodeSDK: NodeSDKMock,
   };
 });
 
@@ -24,6 +24,13 @@ vi.mock('@opentelemetry/resources', () => {
   };
 });
 
+vi.mock('@opentelemetry/sdk-trace-base', () => {
+  return {
+    ParentBasedSampler: vi.fn(),
+    TraceIdRatioBasedSampler: vi.fn(),
+  };
+});
+
 describe('Tracing Setup', () => {
   it('should initialize OpenTelemetry NodeSDK on import', async () => {
     // Import the tracing module
@@ -38,5 +45,18 @@ describe('Tracing Setup', () => {
     await import('./tracing');
 
     expect(OTLPTraceExporter).toHaveBeenCalled();
+  });
+
+  it('should configure a ParentBasedSampler with a TraceIdRatioBasedSampler', async () => {
+    const { ParentBasedSampler, TraceIdRatioBasedSampler } = await import('@opentelemetry/sdk-trace-base');
+    const { NodeSDK } = await import('@opentelemetry/sdk-node');
+
+    await import('./tracing');
+
+    expect(TraceIdRatioBasedSampler).toHaveBeenCalledWith(0.1);
+    expect(ParentBasedSampler).toHaveBeenCalled();
+    expect(NodeSDK).toHaveBeenCalledWith(expect.objectContaining({
+      sampler: expect.any(Object)
+    }));
   });
 });
