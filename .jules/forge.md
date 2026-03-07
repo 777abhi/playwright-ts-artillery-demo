@@ -77,3 +77,8 @@ Constraint: Fastify logger formatters must handle undefined spans gracefully to 
 Decision: Added Prometheus and Grafana services to `docker-compose.yml` with pre-configured datasources and a Performance Dashboard.
 Reasoning: To fulfill the architectural goal of instantly visualizing the exposed Prometheus metrics, enabling real-time and historical performance monitoring without manual setup.
 Constraint: Ensure dashboard configurations (`.json`) are maintained as code and updated alongside metric changes. Port 3002 is used for Grafana to avoid conflicting with the frontend on 3000.
+
+## 2026-03-06 - Distributed Trace Sampling Strategies
+Decision: Configured `ParentBasedSampler` with `TraceIdRatioBasedSampler` in the OpenTelemetry `NodeSDK` to enable probability-based sampling.
+Reasoning: To manage cost and performance overhead in high-throughput environments by tracing a representative percentage of requests instead of every single one.
+Constraint: The sampling ratio is configurable via `TRACE_SAMPLE_RATIO`, defaulting to 0.1 (10%). Head-based sampling drops the trace completely, so any attached logs will lack `traceId` context for non-sampled requests.
