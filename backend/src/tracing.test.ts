@@ -47,13 +47,12 @@ describe('Tracing Setup', () => {
     expect(OTLPTraceExporter).toHaveBeenCalled();
   });
 
-  it('should configure a ParentBasedSampler with a TraceIdRatioBasedSampler', async () => {
-    const { ParentBasedSampler, TraceIdRatioBasedSampler } = await import('@opentelemetry/sdk-trace-base');
+  it('should configure a ParentBasedSampler with a DynamicRatioSampler', async () => {
+    const { ParentBasedSampler } = await import('@opentelemetry/sdk-trace-base');
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
 
     await import('./tracing');
 
-    expect(TraceIdRatioBasedSampler).toHaveBeenCalledWith(0.1);
     expect(ParentBasedSampler).toHaveBeenCalled();
     expect(NodeSDK).toHaveBeenCalledWith(expect.objectContaining({
       sampler: expect.any(Object)

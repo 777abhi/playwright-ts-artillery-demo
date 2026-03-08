@@ -128,4 +128,36 @@ describe('App Integration', () => {
       }, 3000);
     });
   });
+  it('should get and update trace sample ratio', async () => {
+    // First get the default ratio
+    const getResponse = await app.inject({
+      method: 'GET',
+      url: '/settings/trace-ratio'
+    });
+
+    expect(getResponse.statusCode).toBe(200);
+    const getBody = JSON.parse(getResponse.body);
+    expect(getBody).toHaveProperty('ratio');
+    expect(typeof getBody.ratio).toBe('number');
+
+    // Update the ratio
+    const putResponse = await app.inject({
+      method: 'PUT',
+      url: '/settings/trace-ratio',
+      payload: { ratio: 0.5 }
+    });
+
+    expect(putResponse.statusCode).toBe(200);
+    const putBody = JSON.parse(putResponse.body);
+    expect(putBody.success).toBe(true);
+    expect(putBody.ratio).toBe(0.5);
+
+    // Verify the ratio was updated
+    const verifyResponse = await app.inject({
+      method: 'GET',
+      url: '/settings/trace-ratio'
+    });
+    expect(verifyResponse.statusCode).toBe(200);
+    expect(JSON.parse(verifyResponse.body).ratio).toBe(0.5);
+  });
 });
