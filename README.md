@@ -55,4 +55,4 @@ docker-compose up --build
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
 - Implement caching layer (e.g., Redis) for frequently accessed simulation presets to reduce database/backend load.
-- Expose trace sampling configuration (ratio) directly in the UI to allow dynamic adjustment of observability overhead without restarting the service.
+- Expose head-based or tail-based intelligent sampling mechanisms to focus observability explicitly on degraded paths or errors.

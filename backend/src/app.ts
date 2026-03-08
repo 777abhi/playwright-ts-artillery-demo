@@ -5,6 +5,7 @@ import { SimulationService } from './services/simulation.service';
 import { MetricsService } from './services/metrics.service';
 import { PrometheusService } from './services/prometheus.service';
 import fastifyWebsocket from '@fastify/websocket';
+import { dynamicSampler } from './tracing';
 
 export function buildApp(): FastifyInstance {
   const fastify = Fastify({
@@ -96,6 +97,23 @@ export function buildApp(): FastifyInstance {
     const metrics = await prometheusService.getMetrics();
     reply.header('Content-Type', 'text/plain; version=0.0.4');
     return reply.send(metrics);
+  });
+
+  fastify.get('/settings/trace-ratio', async (request, reply) => {
+    return { ratio: dynamicSampler.getRatio() };
+  });
+
+  interface PutTraceRatioBody {
+    ratio: number;
+  }
+
+  fastify.put<{ Body: PutTraceRatioBody }>('/settings/trace-ratio', async (request, reply) => {
+    const { ratio } = request.body;
+    if (typeof ratio !== 'number' || ratio < 0 || ratio > 1) {
+      return reply.code(400).send({ error: 'Ratio must be a number between 0 and 1' });
+    }
+    dynamicSampler.updateRatio(ratio);
+    return { success: true, ratio: dynamicSampler.getRatio() };
   });
 
   interface ProcessQuery {

@@ -39,6 +39,8 @@ function App() {
   const [savedMessage, setSavedMessage] = useState<string>('')
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [metricsHistory, setMetricsHistory] = useState<MetricPoint[]>([])
+  const [traceRatio, setTraceRatio] = useState<number>(0.1)
+  const [ratioSavedMessage, setRatioSavedMessage] = useState<string>('')
 
   useEffect(() => {
     const ws = new WebSocket(`${WS_BASE_URL}/metrics/ws`);
@@ -70,6 +72,42 @@ function App() {
       ws.close();
     };
   }, []);
+
+  useEffect(() => {
+    const fetchTraceRatio = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/settings/trace-ratio`);
+        if (response.ok) {
+          const data = await response.json();
+          setTraceRatio(data.ratio);
+        }
+      } catch (err) {
+        console.error('Failed to fetch trace ratio', err);
+      }
+    };
+    fetchTraceRatio();
+  }, []);
+
+  const handleSaveRatio = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/settings/trace-ratio`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ratio: traceRatio }),
+      });
+      if (response.ok) {
+        setRatioSavedMessage('Ratio saved!');
+        setTimeout(() => setRatioSavedMessage(''), 2000);
+      } else {
+        setRatioSavedMessage('Error saving');
+        setTimeout(() => setRatioSavedMessage(''), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to save trace ratio', err);
+      setRatioSavedMessage('Error saving');
+      setTimeout(() => setRatioSavedMessage(''), 2000);
+    }
+  };
 
   const handleSave = () => {
     setConfig({ delay, cpuLoad, memoryStress, jitter })
@@ -209,6 +247,27 @@ function App() {
         </div>
         <button id="save-settings" onClick={handleSave}>Save Settings</button>
         {savedMessage && <span style={{ marginLeft: '10px', color: 'blue' }}>{savedMessage}</span>}
+      </div>
+
+      <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
+        <h2>Observability</h2>
+        <div style={{ marginBottom: '10px' }}>
+          <label>
+            Trace Sampling Ratio (0.0 to 1.0):
+            <input
+              id="trace-ratio-input"
+              type="number"
+              step="0.01"
+              min="0"
+              max="1"
+              value={traceRatio}
+              onChange={(e) => setTraceRatio(Number(e.target.value))}
+              style={{ marginLeft: '10px' }}
+            />
+          </label>
+        </div>
+        <button id="save-trace-ratio" onClick={handleSaveRatio}>Save Ratio</button>
+        {ratioSavedMessage && <span style={{ marginLeft: '10px', color: 'blue' }}>{ratioSavedMessage}</span>}
       </div>
 
       <div style={{ marginBottom: '20px' }}>

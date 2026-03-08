@@ -82,3 +82,8 @@ Constraint: Ensure dashboard configurations (`.json`) are maintained as code and
 Decision: Configured `ParentBasedSampler` with `TraceIdRatioBasedSampler` in the OpenTelemetry `NodeSDK` to enable probability-based sampling.
 Reasoning: To manage cost and performance overhead in high-throughput environments by tracing a representative percentage of requests instead of every single one.
 Constraint: The sampling ratio is configurable via `TRACE_SAMPLE_RATIO`, defaulting to 0.1 (10%). Head-based sampling drops the trace completely, so any attached logs will lack `traceId` context for non-sampled requests.
+
+## 2026-03-07 - Dynamic Sampling
+Decision: Implemented `DynamicRatioSampler` to allow updating trace sampling ratio at runtime and exposed endpoints and UI controls for it.
+Reasoning: To provide immediate, frictionless management of trace sampling directly from the UI without requiring environment variable updates and server restarts.
+Constraint: The underlying OpenTelemetry sampler isn't inherently mutable, requiring a custom adapter that dynamically forwards sampling decisions to a newly constructed `TraceIdRatioBasedSampler` when ratio changes.
