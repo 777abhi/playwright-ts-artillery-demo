@@ -87,3 +87,8 @@ Constraint: The sampling ratio is configurable via `TRACE_SAMPLE_RATIO`, default
 Decision: Implemented `DynamicRatioSampler` to allow updating trace sampling ratio at runtime and exposed endpoints and UI controls for it.
 Reasoning: To provide immediate, frictionless management of trace sampling directly from the UI without requiring environment variable updates and server restarts.
 Constraint: The underlying OpenTelemetry sampler isn't inherently mutable, requiring a custom adapter that dynamically forwards sampling decisions to a newly constructed `TraceIdRatioBasedSampler` when ratio changes.
+
+## 2026-03-08 - Dynamic Simulation Presets and Caching
+Decision: Shifted simulation presets from the frontend to a backend `PresetService` utilizing a new `ICacheProvider` with an in-memory cache implementation.
+Reasoning: To decouple frontend configuration, reduce repetitive configuration loading via caching, and establish an extensible architecture for future database-backed dynamic preset management.
+Constraint: The current `InMemoryCache` is ephemeral. Future scalable implementations will require a distributed cache provider (e.g. Redis).

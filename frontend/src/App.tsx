@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Config, PRESETS } from './config/presets'
+import { Config } from './config/presets'
 import MetricsChart, { MetricPoint } from './components/MetricsChart'
 
 interface Result extends Config {
@@ -41,6 +41,22 @@ function App() {
   const [metricsHistory, setMetricsHistory] = useState<MetricPoint[]>([])
   const [traceRatio, setTraceRatio] = useState<number>(0.1)
   const [ratioSavedMessage, setRatioSavedMessage] = useState<string>('')
+  const [presets, setPresets] = useState<Record<string, Config>>({})
+
+  useEffect(() => {
+    const fetchPresets = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/presets`);
+        if (response.ok) {
+          const data = await response.json();
+          setPresets(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch presets', err);
+      }
+    };
+    fetchPresets();
+  }, []);
 
   useEffect(() => {
     const ws = new WebSocket(`${WS_BASE_URL}/metrics/ws`);
@@ -182,7 +198,7 @@ function App() {
       <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
         <h2>Presets</h2>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {Object.entries(PRESETS).map(([name, config]) => (
+          {Object.entries(presets).map(([name, config]) => (
             <button
               key={name}
               id={`preset-${name.toLowerCase().replace(/ /g, '-')}`}
