@@ -4,6 +4,7 @@ import { trace } from '@opentelemetry/api';
 import { SimulationService } from './services/simulation.service';
 import { MetricsService } from './services/metrics.service';
 import { PrometheusService } from './services/prometheus.service';
+import { PresetService } from './services/preset.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
 
@@ -23,6 +24,7 @@ export function buildApp(): FastifyInstance {
   const simulationService = new SimulationService();
   const metricsService = new MetricsService();
   const prometheusService = new PrometheusService();
+  const presetService = new PresetService();
 
   fastify.register(cors, { origin: '*' });
 
@@ -97,6 +99,10 @@ export function buildApp(): FastifyInstance {
     const metrics = await prometheusService.getMetrics();
     reply.header('Content-Type', 'text/plain; version=0.0.4');
     return reply.send(metrics);
+  });
+
+  fastify.get('/presets', async (request, reply) => {
+    return presetService.getPresets();
   });
 
   fastify.get('/settings/trace-ratio', async (request, reply) => {

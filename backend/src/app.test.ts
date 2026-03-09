@@ -128,6 +128,18 @@ describe('App Integration', () => {
       }, 3000);
     });
   });
+  it('should expose presets endpoint', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/presets'
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body).toHaveProperty('Optimal');
+    expect(body['Optimal']).toHaveProperty('delay', 0);
+  });
+
   it('should get and update trace sample ratio', async () => {
     // First get the default ratio
     const getResponse = await app.inject({
