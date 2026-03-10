@@ -55,4 +55,4 @@ docker-compose up --build
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
 - Expose head-based or tail-based intelligent sampling mechanisms to focus observability explicitly on degraded paths or errors.
-- Implement an automated system to dynamically adjust trace sampling based on traffic volume to prevent exporter overload.
+- Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.

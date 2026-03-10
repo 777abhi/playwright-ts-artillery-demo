@@ -15,6 +15,7 @@ export interface MetricPoint {
   avgLatency: number;
   p95Latency: number;
   errorRate: number;
+  requests: number;
 }
 
 export class MetricsService {
@@ -82,6 +83,7 @@ export class MetricsService {
       avgLatency,
       p95Latency,
       errorRate,
+      requests: this.intervalRequests,
     };
 
     this.history.push(point);

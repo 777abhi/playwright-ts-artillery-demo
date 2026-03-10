@@ -92,3 +92,8 @@ Constraint: The underlying OpenTelemetry sampler isn't inherently mutable, requi
 Decision: Shifted simulation presets from the frontend to a backend `PresetService` utilizing a new `ICacheProvider` with an in-memory cache implementation.
 Reasoning: To decouple frontend configuration, reduce repetitive configuration loading via caching, and establish an extensible architecture for future database-backed dynamic preset management.
 Constraint: The current `InMemoryCache` is ephemeral. Future scalable implementations will require a distributed cache provider (e.g. Redis).
+
+## 2026-03-09 - Automated Trace Sampling Adjustment
+Decision: Created `AutoSamplerService` to dynamically adjust trace sampling ratios based on current request traffic volume, tracked via `requests` added to `MetricPoint` history.
+Reasoning: To automatically manage tracing overhead during traffic spikes by reducing sampling, and ensure robust observation during low-traffic periods by increasing sampling, preventing exporter overload without manual intervention.
+Constraint: Adjustment logic relies on interval requests. Thresholds for high/low load and step adjustments should be configurable (currently hardcoded constants) to allow fine-tuning per environment.

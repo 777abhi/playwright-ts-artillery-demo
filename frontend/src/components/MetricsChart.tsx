@@ -15,6 +15,7 @@ export interface MetricPoint {
   avgLatency: number;
   p95Latency: number;
   errorRate: number;
+  requests: number;
 }
 
 interface MetricsChartProps {
@@ -44,6 +45,7 @@ const MetricsChart: React.FC<MetricsChartProps> = ({ data }) => {
           <Line yAxisId="left" type="monotone" dataKey="avgLatency" stroke="#8884d8" activeDot={{ r: 8 }} name="Avg Latency" />
           <Line yAxisId="left" type="monotone" dataKey="p95Latency" stroke="#ff7300" name="P95 Latency" />
           <Line yAxisId="right" type="monotone" dataKey="errorRate" stroke="#82ca9d" name="Error Rate" />
+          <Line yAxisId="right" type="monotone" dataKey="requests" stroke="#00C49F" name="Requests" />
         </LineChart>
       </ResponsiveContainer>
     </div>

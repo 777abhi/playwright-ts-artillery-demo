@@ -106,4 +106,20 @@ describe('MetricsService', () => {
     expect(history[0].avgLatency).toBe(100);
     expect(history[1].avgLatency).toBe(300);
   });
+
+  it('should include requests count in history snapshot', () => {
+    service.recordRequest(100, true);
+    service.recordRequest(100, true);
+    service.snapshot();
+
+    const history = service.getHistory();
+    expect(history.length).toBe(1);
+    expect(history[0].requests).toBe(2);
+
+    service.recordRequest(100, true);
+    service.snapshot();
+    const history2 = service.getHistory();
+    expect(history2.length).toBe(2);
+    expect(history2[1].requests).toBe(1);
+  });
 });
