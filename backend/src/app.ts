@@ -5,6 +5,7 @@ import { SimulationService } from './services/simulation.service';
 import { MetricsService } from './services/metrics.service';
 import { PrometheusService } from './services/prometheus.service';
 import { PresetService } from './services/preset.service';
+import { AutoSamplerService } from './services/auto-sampler.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
 
@@ -25,6 +26,7 @@ export function buildApp(): FastifyInstance {
   const metricsService = new MetricsService();
   const prometheusService = new PrometheusService();
   const presetService = new PresetService();
+  const autoSamplerService = new AutoSamplerService();
 
   fastify.register(cors, { origin: '*' });
 
@@ -53,9 +55,15 @@ export function buildApp(): FastifyInstance {
     snapshotInterval = setInterval(() => {
       metricsService.snapshot();
 
+      const history = metricsService.getHistory();
+      if (history.length > 0) {
+        const latestPoint = history[history.length - 1];
+        autoSamplerService.adjustRatio(dynamicSampler, latestPoint.requests);
+      }
+
       const metricsData = JSON.stringify({
         ...metricsService.getMetrics(),
-        history: metricsService.getHistory(),
+        history,
       });
 
       fastify.websocketServer.clients.forEach(client => {

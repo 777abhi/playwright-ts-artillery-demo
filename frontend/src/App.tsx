@@ -21,6 +21,7 @@ interface Metrics {
     avgLatency: number;
     p95Latency: number;
     errorRate: number;
+    requests: number;
   }[];
 }
 
@@ -72,6 +73,7 @@ function App() {
             avgLatency: point.avgLatency,
             p95Latency: point.p95Latency,
             errorRate: point.errorRate,
+            requests: point.requests,
           }));
           setMetricsHistory(formattedHistory);
         }
@@ -277,13 +279,12 @@ function App() {
               min="0"
               max="1"
               value={traceRatio}
-              onChange={(e) => setTraceRatio(Number(e.target.value))}
-              style={{ marginLeft: '10px' }}
+              disabled
+              style={{ marginLeft: '10px', backgroundColor: '#e9ecef', cursor: 'not-allowed' }}
+              title="Automatically adjusted by traffic volume"
             />
           </label>
         </div>
-        <button id="save-trace-ratio" onClick={handleSaveRatio}>Save Ratio</button>
-        {ratioSavedMessage && <span style={{ marginLeft: '10px', color: 'blue' }}>{ratioSavedMessage}</span>}
       </div>
 
       <div style={{ marginBottom: '20px' }}>
