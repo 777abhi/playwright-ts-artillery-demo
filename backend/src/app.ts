@@ -36,23 +36,6 @@ export function buildApp(): FastifyInstance {
 
   fastify.addHook('onRequest', async (request, reply) => {
     requestStartTimes.set(request, Date.now());
-
-    const protectedPaths = [
-      { path: '/process', method: 'GET' },
-      { path: '/metrics', method: 'DELETE' }
-    ];
-
-    const isProtected = protectedPaths.some(p =>
-      request.url.startsWith(p.path) && request.method === p.method
-    );
-
-    if (isProtected) {
-      const apiKey = request.headers['x-api-key'] as string | undefined;
-      if (!authService.validateApiKey(apiKey)) {
-        reply.code(401).send({ error: 'Unauthorized: Invalid or missing API key' });
-        return;
-      }
-    }
   });
 
   fastify.addHook('onResponse', async (request, reply) => {
@@ -117,7 +100,15 @@ export function buildApp(): FastifyInstance {
     };
   });
 
-  fastify.delete('/metrics', async () => {
+  fastify.delete('/metrics', async (request, reply) => {
+    const apiKey = request.headers['x-api-key'] as string | undefined;
+    const role = authService.getRole(apiKey);
+
+    if (!authService.canResetMetrics(role)) {
+      reply.code(403).send({ error: 'Forbidden: Insufficient permissions to reset metrics' });
+      return;
+    }
+
     metricsService.reset();
     return { success: true };
   });
@@ -161,6 +152,14 @@ export function buildApp(): FastifyInstance {
     const cpuLoad = parseInt(request.query.cpuLoad || '0') || 0;
     const memoryStress = parseInt(request.query.memoryStress || '0') || 0;
     const jitter = parseInt(request.query.jitter || '0') || 0;
+
+    const apiKey = request.headers['x-api-key'] as string | undefined;
+    const role = authService.getRole(apiKey);
+
+    if (!authService.canSimulate(role, { delay, memoryStress })) {
+      reply.code(403).send({ error: 'Forbidden: Insufficient permissions for requested simulation parameters' });
+      return;
+    }
 
     try {
       if (delay < 0) {

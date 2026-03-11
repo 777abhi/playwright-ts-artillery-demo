@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { AuthService } from './auth.service';
+import { AuthService, Role, SimulationParams } from './auth.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -14,32 +14,96 @@ describe('AuthService', () => {
     process.env = originalEnv;
   });
 
-  it('should validate API key successfully when it matches process.env.API_KEY', () => {
-    process.env.API_KEY = 'secret-key-123';
-    authService = new AuthService();
+  describe('getRole', () => {
+    it('should return ADMIN when no keys are set (development mode)', () => {
+      delete process.env.API_KEY;
+      delete process.env.ADMIN_API_KEY;
+      delete process.env.USER_API_KEY;
+      authService = new AuthService();
 
-    expect(authService.validateApiKey('secret-key-123')).toBe(true);
+      expect(authService.getRole('any-key')).toBe(Role.ADMIN);
+      expect(authService.getRole(undefined)).toBe(Role.ADMIN);
+    });
+
+    it('should return ADMIN when matching API_KEY (backward compatibility)', () => {
+      process.env.API_KEY = 'admin-secret';
+      authService = new AuthService();
+
+      expect(authService.getRole('admin-secret')).toBe(Role.ADMIN);
+      expect(authService.getRole('wrong-key')).toBe(Role.GUEST);
+      expect(authService.getRole(undefined)).toBe(Role.GUEST);
+    });
+
+    it('should return ADMIN when matching ADMIN_API_KEY', () => {
+      process.env.ADMIN_API_KEY = 'admin-secret-new';
+      authService = new AuthService();
+
+      expect(authService.getRole('admin-secret-new')).toBe(Role.ADMIN);
+    });
+
+    it('should return USER when matching USER_API_KEY', () => {
+      process.env.ADMIN_API_KEY = 'admin-secret';
+      process.env.USER_API_KEY = 'user-secret';
+      authService = new AuthService();
+
+      expect(authService.getRole('user-secret')).toBe(Role.USER);
+    });
+
+    it('should return GUEST for invalid keys', () => {
+      process.env.ADMIN_API_KEY = 'admin-secret';
+      process.env.USER_API_KEY = 'user-secret';
+      authService = new AuthService();
+
+      expect(authService.getRole('wrong-key')).toBe(Role.GUEST);
+      expect(authService.getRole(undefined)).toBe(Role.GUEST);
+    });
   });
 
-  it('should fail validation when API key does not match', () => {
-    process.env.API_KEY = 'secret-key-123';
-    authService = new AuthService();
+  describe('canSimulate', () => {
+    beforeEach(() => {
+      authService = new AuthService(); // Env vars don't matter for these tests
+    });
 
-    expect(authService.validateApiKey('wrong-key')).toBe(false);
+    it('should allow ADMIN to simulate anything', () => {
+      expect(authService.canSimulate(Role.ADMIN, { delay: 100 })).toBe(true);
+      expect(authService.canSimulate(Role.ADMIN, { delay: -1 })).toBe(true); // Service fail
+      expect(authService.canSimulate(Role.ADMIN, { memoryStress: 50 })).toBe(true);
+    });
+
+    it('should allow USER to simulate normal delay and cpu load', () => {
+      expect(authService.canSimulate(Role.USER, { delay: 100, memoryStress: 0 })).toBe(true);
+      expect(authService.canSimulate(Role.USER, { delay: 0, memoryStress: 0 })).toBe(true);
+    });
+
+    it('should restrict USER from simulating negative delay (service fail)', () => {
+      expect(authService.canSimulate(Role.USER, { delay: -1, memoryStress: 0 })).toBe(false);
+    });
+
+    it('should restrict USER from simulating memory stress', () => {
+      expect(authService.canSimulate(Role.USER, { delay: 100, memoryStress: 50 })).toBe(false);
+    });
+
+    it('should restrict GUEST from simulating anything', () => {
+      expect(authService.canSimulate(Role.GUEST, { delay: 100 })).toBe(false);
+      expect(authService.canSimulate(Role.GUEST, { delay: 0 })).toBe(false);
+    });
   });
 
-  it('should fail validation when no API key is provided', () => {
-    process.env.API_KEY = 'secret-key-123';
-    authService = new AuthService();
+  describe('canResetMetrics', () => {
+    beforeEach(() => {
+      authService = new AuthService();
+    });
 
-    expect(authService.validateApiKey(undefined)).toBe(false);
-  });
+    it('should allow ADMIN to reset metrics', () => {
+      expect(authService.canResetMetrics(Role.ADMIN)).toBe(true);
+    });
 
-  it('should pass validation for any key if API_KEY env variable is not set (development mode)', () => {
-    delete process.env.API_KEY;
-    authService = new AuthService();
+    it('should restrict USER from resetting metrics', () => {
+      expect(authService.canResetMetrics(Role.USER)).toBe(false);
+    });
 
-    expect(authService.validateApiKey('any-key')).toBe(true);
-    expect(authService.validateApiKey(undefined)).toBe(true);
+    it('should restrict GUEST from resetting metrics', () => {
+      expect(authService.canResetMetrics(Role.GUEST)).toBe(false);
+    });
   });
 });

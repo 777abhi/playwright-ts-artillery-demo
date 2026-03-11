@@ -35,10 +35,14 @@ The dashboard also features a **Real-time Metrics History** chart, visualizing p
 
 This history is persisted in the backend (in-memory) and served via the API, ensuring consistency across page reloads.
 
-## Authentication
+## Authentication and RBAC
 
-The API endpoints that modify simulation state or metrics history (such as `/process` and `DELETE /metrics`) can now be secured using an API key.
-To enable authentication, set the `API_KEY` environment variable on the backend. When enabled, clients must provide this key via the `x-api-key` header to access protected routes. If no key is set, the API runs in development mode (open access).
+The API endpoints that modify simulation state or metrics history (such as `/process` and `DELETE /metrics`) are secured using a Role-Based Access Control (RBAC) system.
+
+- **ADMIN Role**: Can execute all simulations, including severe operations like Service Fails (negative delays) and Memory Stress. Can also reset metrics. Enabled via the `ADMIN_API_KEY` or the legacy `API_KEY` environment variables.
+- **USER Role**: Can execute standard simulations (positive delay, CPU load) but restricted from severe operations and resetting metrics. Enabled via the `USER_API_KEY` environment variable.
+
+Clients must provide their assigned key via the `x-api-key` header to access protected routes. If no keys are set, the API runs in development mode (open access as ADMIN).
 
 ## Running the App
 
@@ -56,8 +60,9 @@ docker-compose up --build
 
 ## Future Improvements
 
-- Implement fine-grained Role-Based Access Control (RBAC) for different simulation scenarios.
+- ~~Implement fine-grained Role-Based Access Control (RBAC) for different simulation scenarios.~~ (Completed: Implemented RBAC with ADMIN and USER roles)
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
 - Expose head-based or tail-based intelligent sampling mechanisms to focus observability explicitly on degraded paths or errors.
 - Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.
+- Integrate an external Identity Provider (e.g., Auth0, Cognito) for managing RBAC roles instead of relying on environment variables.
