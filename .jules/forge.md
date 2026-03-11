@@ -97,3 +97,8 @@ Constraint: The current `InMemoryCache` is ephemeral. Future scalable implementa
 Decision: Created `AutoSamplerService` to dynamically adjust trace sampling ratios based on current request traffic volume, tracked via `requests` added to `MetricPoint` history.
 Reasoning: To automatically manage tracing overhead during traffic spikes by reducing sampling, and ensure robust observation during low-traffic periods by increasing sampling, preventing exporter overload without manual intervention.
 Constraint: Adjustment logic relies on interval requests. Thresholds for high/low load and step adjustments should be configurable (currently hardcoded constants) to allow fine-tuning per environment.
+
+## 2026-03-11 - API Key Authentication
+Decision: Implemented `AuthService` and Fastify request hook to secure sensitive simulation API endpoints (`/process`, `DELETE /metrics`).
+Reasoning: To secure the simulation control panel from unauthorized execution or resets by verifying an `x-api-key` header against the `API_KEY` backend environment variable.
+Constraint: When `API_KEY` is undefined, the backend defaults to open access for backward-compatible development. Future iterations should add RBAC instead of simple boolean checks.

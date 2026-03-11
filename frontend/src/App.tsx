@@ -43,6 +43,8 @@ function App() {
   const [traceRatio, setTraceRatio] = useState<number>(0.1)
   const [ratioSavedMessage, setRatioSavedMessage] = useState<string>('')
   const [presets, setPresets] = useState<Record<string, Config>>({})
+  const [apiKey, setApiKey] = useState<string>('')
+  const [authError, setAuthError] = useState<string>('')
 
   useEffect(() => {
     const fetchPresets = async () => {
@@ -145,8 +147,18 @@ function App() {
   const handleTrigger = async () => {
     setLoading(true)
     setResult(null)
+    setAuthError('')
     try {
-      const response = await fetch(`${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`)
+      const response = await fetch(`${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`, {
+        headers: {
+          'x-api-key': apiKey
+        }
+      })
+      if (response.status === 401) {
+        setAuthError('Unauthorized: Invalid or missing API key')
+        setResult({ delay: 0, cpuLoad: 0, memoryStress: 0, jitter: 0, error: 'Unauthorized' })
+        return
+      }
       const data: Result = await response.json()
       setResult(data)
     } catch (error) {
@@ -158,8 +170,18 @@ function App() {
   }
 
   const resetMetrics = async () => {
+    setAuthError('')
     try {
-      await fetch(`${API_BASE_URL}/metrics`, { method: 'DELETE' })
+      const response = await fetch(`${API_BASE_URL}/metrics`, {
+        method: 'DELETE',
+        headers: {
+          'x-api-key': apiKey
+        }
+      })
+      if (response.status === 401) {
+        setAuthError('Unauthorized: Invalid or missing API key for resetting metrics')
+        return
+      }
       setMetrics(prev => prev ? { ...prev, totalRequests: 0, totalErrors: 0, totalLatency: 0, avgLatency: 0, minLatency: 0, maxLatency: 0, errorRate: 0, history: [] } : null)
       setMetricsHistory([])
     } catch (error) {
@@ -170,6 +192,12 @@ function App() {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Performance Simulation</h1>
+
+      {authError && (
+        <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', marginBottom: '20px', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
+          {authError}
+        </div>
+      )}
 
       {metrics && (
         <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px', background: '#f9f9f9' }}>
@@ -215,6 +243,19 @@ function App() {
 
       <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
         <h2>Settings</h2>
+        <div style={{ marginBottom: '10px' }}>
+          <label>
+            API Key:
+            <input
+              id="api-key-input"
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              style={{ marginLeft: '10px' }}
+              placeholder="Enter API Key to unlock features"
+            />
+          </label>
+        </div>
         <div style={{ marginBottom: '10px' }}>
           <label>
             Delay (ms):

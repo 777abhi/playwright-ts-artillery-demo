@@ -35,6 +35,11 @@ The dashboard also features a **Real-time Metrics History** chart, visualizing p
 
 This history is persisted in the backend (in-memory) and served via the API, ensuring consistency across page reloads.
 
+## Authentication
+
+The API endpoints that modify simulation state or metrics history (such as `/process` and `DELETE /metrics`) can now be secured using an API key.
+To enable authentication, set the `API_KEY` environment variable on the backend. When enabled, clients must provide this key via the `x-api-key` header to access protected routes. If no key is set, the API runs in development mode (open access).
+
 ## Running the App
 
 To start both the frontend and backend services:
@@ -51,7 +56,7 @@ docker-compose up --build
 
 ## Future Improvements
 
-- Add authentication to secure the simulation control panel and metrics endpoints.
+- Implement fine-grained Role-Based Access Control (RBAC) for different simulation scenarios.
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
 - Expose head-based or tail-based intelligent sampling mechanisms to focus observability explicitly on degraded paths or errors.

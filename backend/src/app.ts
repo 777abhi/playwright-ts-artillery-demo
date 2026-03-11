@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import { trace } from '@opentelemetry/api';
+import { AuthService } from './services/auth.service';
 import { SimulationService } from './services/simulation.service';
 import { MetricsService } from './services/metrics.service';
 import { PrometheusService } from './services/prometheus.service';
@@ -27,13 +28,31 @@ export function buildApp(): FastifyInstance {
   const prometheusService = new PrometheusService();
   const presetService = new PresetService();
   const autoSamplerService = new AutoSamplerService();
+  const authService = new AuthService();
 
   fastify.register(cors, { origin: '*' });
 
   const requestStartTimes = new WeakMap<object, number>();
 
-  fastify.addHook('onRequest', async (request) => {
+  fastify.addHook('onRequest', async (request, reply) => {
     requestStartTimes.set(request, Date.now());
+
+    const protectedPaths = [
+      { path: '/process', method: 'GET' },
+      { path: '/metrics', method: 'DELETE' }
+    ];
+
+    const isProtected = protectedPaths.some(p =>
+      request.url.startsWith(p.path) && request.method === p.method
+    );
+
+    if (isProtected) {
+      const apiKey = request.headers['x-api-key'] as string | undefined;
+      if (!authService.validateApiKey(apiKey)) {
+        reply.code(401).send({ error: 'Unauthorized: Invalid or missing API key' });
+        return;
+      }
+    }
   });
 
   fastify.addHook('onResponse', async (request, reply) => {
