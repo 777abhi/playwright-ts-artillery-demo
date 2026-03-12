@@ -5,9 +5,11 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { ParentBasedSampler } from '@opentelemetry/sdk-trace-base';
 import { DynamicRatioSampler } from './services/tracing.service';
+import { IntelligentSampler } from './services/intelligent-sampler.service';
 
 const traceRatio = parseFloat(process.env.TRACE_SAMPLE_RATIO || '0.1');
 export const dynamicSampler = new DynamicRatioSampler(traceRatio);
+const intelligentSampler = new IntelligentSampler(dynamicSampler);
 
 export const sdk = new NodeSDK({
   resource: resourceFromAttributes({
@@ -16,7 +18,7 @@ export const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter(),
   instrumentations: [getNodeAutoInstrumentations()],
   sampler: new ParentBasedSampler({
-    root: dynamicSampler,
+    root: intelligentSampler,
   }),
 });
 
