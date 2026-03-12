@@ -102,3 +102,8 @@ Constraint: Adjustment logic relies on interval requests. Thresholds for high/lo
 Decision: Implemented `AuthService` and Fastify request hook to secure sensitive simulation API endpoints (`/process`, `DELETE /metrics`).
 Reasoning: To secure the simulation control panel from unauthorized execution or resets by verifying an `x-api-key` header against the `API_KEY` backend environment variable.
 Constraint: When `API_KEY` is undefined, the backend defaults to open access for backward-compatible development. Future iterations should add RBAC instead of simple boolean checks.
+
+## 2026-03-12 - Role-Based Access Control (RBAC)
+Decision: Enhanced `AuthService` with RBAC defining ADMIN, USER, and GUEST roles using `ADMIN_API_KEY` and `USER_API_KEY` alongside legacy `API_KEY`. Moved authorization checks from a global `onRequest` hook to explicit endpoint validations.
+Reasoning: To establish fine-grained control over simulation parameters. Now, only ADMIN can trigger severe simulations like negative delays (Service Fail) and memory stress, or reset metrics, while USER has basic delay and CPU manipulation rights.
+Constraint: GUEST users have no execute permissions. For backwards compatibility, legacy `API_KEY` behaves as `ADMIN_API_KEY`.
