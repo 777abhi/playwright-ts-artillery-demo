@@ -107,3 +107,8 @@ Constraint: When `API_KEY` is undefined, the backend defaults to open access for
 Decision: Enhanced `AuthService` with RBAC defining ADMIN, USER, and GUEST roles using `ADMIN_API_KEY` and `USER_API_KEY` alongside legacy `API_KEY`. Moved authorization checks from a global `onRequest` hook to explicit endpoint validations.
 Reasoning: To establish fine-grained control over simulation parameters. Now, only ADMIN can trigger severe simulations like negative delays (Service Fail) and memory stress, or reset metrics, while USER has basic delay and CPU manipulation rights.
 Constraint: GUEST users have no execute permissions. For backwards compatibility, legacy `API_KEY` behaves as `ADMIN_API_KEY`.
+
+## 2026-03-12 - Intelligent Head-based Sampling
+Decision: Implemented `IntelligentSampler` to wrap `DynamicRatioSampler`.
+Reasoning: To guarantee distributed tracing for known degraded paths (high latency, memory stress, CPU load, errors) regardless of the prevailing traffic-based dynamic sampling ratio. This ensures critical observability data is never lost due to random sampling drops.
+Constraint: Sampling decision is based on request attributes (URL params). Ensure these parameters remain consistent across future simulation extensions.

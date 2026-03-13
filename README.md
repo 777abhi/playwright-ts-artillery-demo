@@ -61,8 +61,9 @@ docker-compose up --build
 ## Future Improvements
 
 - ~~Implement fine-grained Role-Based Access Control (RBAC) for different simulation scenarios.~~ (Completed: Implemented RBAC with ADMIN and USER roles)
+- ~~Expose head-based or tail-based intelligent sampling mechanisms to focus observability explicitly on degraded paths or errors.~~ (Completed: Implemented IntelligentSampler for head-based sampling on degraded paths)
 - Implement server-side rendering (SSR) for initial load performance.
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
-- Expose head-based or tail-based intelligent sampling mechanisms to focus observability explicitly on degraded paths or errors.
 - Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.
 - Integrate an external Identity Provider (e.g., Auth0, Cognito) for managing RBAC roles instead of relying on environment variables.
+- Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.
