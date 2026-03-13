@@ -8,6 +8,11 @@ interface Result extends Config {
   error?: string;
 }
 
+interface Anomaly {
+  type: string;
+  message: string;
+}
+
 interface Metrics {
   totalRequests: number;
   totalErrors: number;
@@ -23,6 +28,7 @@ interface Metrics {
     errorRate: number;
     requests: number;
   }[];
+  anomalies?: Anomaly[];
 }
 
 // Define API base URL constant for easy configuration
@@ -40,6 +46,7 @@ function App() {
   const [savedMessage, setSavedMessage] = useState<string>('')
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [metricsHistory, setMetricsHistory] = useState<MetricPoint[]>([])
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([])
   const [traceRatio, setTraceRatio] = useState<number>(0.1)
   const [ratioSavedMessage, setRatioSavedMessage] = useState<string>('')
   const [presets, setPresets] = useState<Record<string, Config>>({})
@@ -78,6 +85,10 @@ function App() {
             requests: point.requests,
           }));
           setMetricsHistory(formattedHistory);
+        }
+
+        if (data.anomalies) {
+          setAnomalies(data.anomalies);
         }
       } catch (err) {
         console.error('Failed to parse websocket metrics message', err);
@@ -196,6 +207,17 @@ function App() {
       {authError && (
         <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', marginBottom: '20px', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
           {authError}
+        </div>
+      )}
+
+      {anomalies.length > 0 && (
+        <div style={{ padding: '10px', backgroundColor: '#fff3cd', color: '#856404', marginBottom: '20px', border: '1px solid #ffeeba', borderRadius: '4px' }}>
+          <strong>Anomalies Detected!</strong>
+          <ul style={{ margin: '5px 0 0 20px', padding: 0 }}>
+            {anomalies.map((anomaly, index) => (
+              <li key={index}>{anomaly.message}</li>
+            ))}
+          </ul>
         </div>
       )}
 

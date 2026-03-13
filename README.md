@@ -66,4 +66,5 @@ docker-compose up --build
 - Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.
 - Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.
 - Integrate an external Identity Provider (e.g., Auth0, Cognito) for managing RBAC roles instead of relying on environment variables.
-- Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.
+- ~~Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.~~ (Completed: Implemented AnomalyDetectorService with sliding window baseline logic)
+- Store metrics and anomalies in a persistent database (e.g. PostgreSQL or InfluxDB) to enable long-term historical analysis beyond the recent memory window.

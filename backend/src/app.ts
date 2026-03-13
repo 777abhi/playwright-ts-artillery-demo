@@ -7,6 +7,7 @@ import { MetricsService } from './services/metrics.service';
 import { PrometheusService } from './services/prometheus.service';
 import { PresetService } from './services/preset.service';
 import { AutoSamplerService } from './services/auto-sampler.service';
+import { AnomalyDetectorService } from './services/anomaly-detector.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
 
@@ -29,6 +30,7 @@ export function buildApp(): FastifyInstance {
   const presetService = new PresetService();
   const autoSamplerService = new AutoSamplerService();
   const authService = new AuthService();
+  const anomalyDetectorService = new AnomalyDetectorService();
 
   fastify.register(cors, { origin: '*' });
 
@@ -58,14 +60,17 @@ export function buildApp(): FastifyInstance {
       metricsService.snapshot();
 
       const history = metricsService.getHistory();
+      let anomalies: any[] = [];
       if (history.length > 0) {
         const latestPoint = history[history.length - 1];
         autoSamplerService.adjustRatio(dynamicSampler, latestPoint.requests);
+        anomalies = anomalyDetectorService.detectAnomalies(history);
       }
 
       const metricsData = JSON.stringify({
         ...metricsService.getMetrics(),
         history,
+        anomalies,
       });
 
       fastify.websocketServer.clients.forEach(client => {
@@ -78,10 +83,12 @@ export function buildApp(): FastifyInstance {
 
   fastify.register(async function (fastify) {
     fastify.get('/metrics/ws', { websocket: true }, (connection, req) => {
+      const history = metricsService.getHistory();
       // Send initial state upon connection
       connection.socket.send(JSON.stringify({
         ...metricsService.getMetrics(),
-        history: metricsService.getHistory(),
+        history,
+        anomalies: anomalyDetectorService.detectAnomalies(history),
       }));
     });
   });
