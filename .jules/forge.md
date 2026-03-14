@@ -112,3 +112,8 @@ Constraint: GUEST users have no execute permissions. For backwards compatibility
 Decision: Implemented `IntelligentSampler` to wrap `DynamicRatioSampler`.
 Reasoning: To guarantee distributed tracing for known degraded paths (high latency, memory stress, CPU load, errors) regardless of the prevailing traffic-based dynamic sampling ratio. This ensures critical observability data is never lost due to random sampling drops.
 Constraint: Sampling decision is based on request attributes (URL params). Ensure these parameters remain consistent across future simulation extensions.
+
+## 2026-03-13 - Anomaly Detection
+Decision: Implemented AnomalyDetectorService with sliding window baseline logic to detect latency spikes and high error rates.
+Reasoning: To automatically notify the frontend of sudden performance deviations without requiring manual observation.
+Constraint: Anomalies are detected based on in-memory history. Future implementations should rely on a persistent data store for long-term historical analysis.
