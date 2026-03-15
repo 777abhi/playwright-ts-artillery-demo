@@ -8,10 +8,11 @@ import { PrometheusService } from './services/prometheus.service';
 import { PresetService } from './services/preset.service';
 import { AutoSamplerService } from './services/auto-sampler.service';
 import { AnomalyDetectorService } from './services/anomaly-detector.service';
+import { DatabaseService } from './services/database.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
 
-export function buildApp(): FastifyInstance {
+export function buildApp(dbPath?: string): FastifyInstance {
   const fastify = Fastify({
     logger: {
       formatters: {
@@ -31,6 +32,7 @@ export function buildApp(): FastifyInstance {
   const autoSamplerService = new AutoSamplerService();
   const authService = new AuthService();
   const anomalyDetectorService = new AnomalyDetectorService();
+  const databaseService = new DatabaseService(dbPath);
 
   fastify.register(cors, { origin: '*' });
 
@@ -56,6 +58,8 @@ export function buildApp(): FastifyInstance {
   fastify.register(fastifyWebsocket);
 
   fastify.addHook('onReady', async () => {
+    await databaseService.init();
+
     snapshotInterval = setInterval(() => {
       metricsService.snapshot();
 
@@ -65,6 +69,17 @@ export function buildApp(): FastifyInstance {
         const latestPoint = history[history.length - 1];
         autoSamplerService.adjustRatio(dynamicSampler, latestPoint.requests);
         anomalies = anomalyDetectorService.detectAnomalies(history);
+
+        // Persist to database
+        databaseService.saveMetricPoint(latestPoint).catch(err => {
+          fastify.log.error('Failed to save metric point', err);
+        });
+
+        for (const anomaly of anomalies) {
+          databaseService.saveAnomaly(anomaly, latestPoint.timestamp).catch(err => {
+            fastify.log.error('Failed to save anomaly', err);
+          });
+        }
       }
 
       const metricsData = JSON.stringify({
@@ -98,6 +113,7 @@ export function buildApp(): FastifyInstance {
       clearInterval(snapshotInterval);
     }
     prometheusService.stop();
+    await databaseService.close();
   });
 
   fastify.get('/metrics', async () => {
@@ -124,6 +140,28 @@ export function buildApp(): FastifyInstance {
     const metrics = await prometheusService.getMetrics();
     reply.header('Content-Type', 'text/plain; version=0.0.4');
     return reply.send(metrics);
+  });
+
+  interface HistoryQuery {
+    startTime?: string;
+    endTime?: string;
+  }
+
+  fastify.get<{ Querystring: HistoryQuery }>('/metrics/history/long-term', async (request, reply) => {
+    const defaultEndTime = Date.now();
+    const defaultStartTime = defaultEndTime - 24 * 60 * 60 * 1000; // Last 24 hours
+
+    const startTime = parseInt(request.query.startTime || defaultStartTime.toString()) || defaultStartTime;
+    const endTime = parseInt(request.query.endTime || defaultEndTime.toString()) || defaultEndTime;
+
+    try {
+      const metrics = await databaseService.getHistoricalMetrics(startTime, endTime);
+      const anomalies = await databaseService.getHistoricalAnomalies(startTime, endTime);
+      return { metrics, anomalies };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to fetch historical data' });
+    }
   });
 
   fastify.get('/presets', async (request, reply) => {

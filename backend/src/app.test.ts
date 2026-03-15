@@ -19,7 +19,7 @@ describe('App Integration', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    app = buildApp();
+    app = buildApp(':memory:');
     await app.listen({ port: 0 }); // Random port
   });
 

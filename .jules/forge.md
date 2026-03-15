@@ -117,3 +117,8 @@ Constraint: Sampling decision is based on request attributes (URL params). Ensur
 Decision: Implemented AnomalyDetectorService with sliding window baseline logic to detect latency spikes and high error rates.
 Reasoning: To automatically notify the frontend of sudden performance deviations without requiring manual observation.
 Constraint: Anomalies are detected based on in-memory history. Future implementations should rely on a persistent data store for long-term historical analysis.
+
+## 2026-03-14 - SQLite Database Persistence
+Decision: Introduced `DatabaseService` using SQLite to persistently store metrics snapshots and detected anomalies. Added `GET /metrics/history/long-term` endpoint.
+Reasoning: To enable long-term historical analysis beyond the recent memory window. SQLite provides a lightweight, zero-configuration embedded database perfect for this standalone performance application without adding complex external dependencies like PostgreSQL to the stack.
+Constraint: Ensure database queries are optimized if the volume of historical data grows significantly.
