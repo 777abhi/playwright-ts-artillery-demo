@@ -1,84 +1,81 @@
-import { useState, useEffect } from 'react'
-import { Config } from './config/presets'
+import React, { useState, useEffect } from 'react'
 import MetricsChart, { MetricPoint } from './components/MetricsChart'
+import LongTermMetrics from './components/LongTermMetrics'
+import { presets, Config } from './config/presets'
 
-interface Result extends Config {
-  success?: boolean;
-  duration?: number;
-  error?: string;
-}
+const API_BASE_URL = 'http://localhost:3001'
+const WS_BASE_URL = 'ws://localhost:3001'
 
-interface Anomaly {
-  type: string;
-  message: string;
+interface Result {
+  delay: number
+  cpuLoad: number
+  memoryStress: number
+  jitter: number
+  duration?: number
+  error?: string
+  success?: boolean
 }
 
 interface Metrics {
-  totalRequests: number;
-  totalErrors: number;
-  totalLatency: number;
-  avgLatency: number;
-  minLatency: number;
-  maxLatency: number;
-  errorRate: number;
-  history: {
-    timestamp: number;
-    avgLatency: number;
-    p95Latency: number;
-    errorRate: number;
-    requests: number;
-  }[];
-  anomalies?: Anomaly[];
+  totalRequests: number
+  totalErrors: number
+  totalLatency: number
+  avgLatency: number
+  minLatency: number
+  maxLatency: number
+  errorRate: number
+  history: any[]
 }
 
-// Define API base URL constant for easy configuration
-const API_BASE_URL = 'http://localhost:3001';
-const WS_BASE_URL = 'ws://localhost:3001';
+interface Anomaly {
+  type: string
+  message: string
+}
 
 function App() {
-  const [delay, setDelay] = useState<number>(0)
-  const [cpuLoad, setCpuLoad] = useState<number>(0)
-  const [memoryStress, setMemoryStress] = useState<number>(0)
-  const [jitter, setJitter] = useState<number>(0)
+  const [delay, setDelay] = useState(0)
+  const [cpuLoad, setCpuLoad] = useState(0)
+  const [memoryStress, setMemoryStress] = useState(0)
+  const [jitter, setJitter] = useState(0)
   const [config, setConfig] = useState<Config>({ delay: 0, cpuLoad: 0, memoryStress: 0, jitter: 0 })
+  const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Result | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [savedMessage, setSavedMessage] = useState<string>('')
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [metricsHistory, setMetricsHistory] = useState<MetricPoint[]>([])
   const [anomalies, setAnomalies] = useState<Anomaly[]>([])
+  const [savedMessage, setSavedMessage] = useState('')
+  const [fetchedPresets, setFetchedPresets] = useState<Record<string, Config>>({})
   const [traceRatio, setTraceRatio] = useState<number>(0.1)
-  const [ratioSavedMessage, setRatioSavedMessage] = useState<string>('')
-  const [presets, setPresets] = useState<Record<string, Config>>({})
   const [apiKey, setApiKey] = useState<string>('')
   const [authError, setAuthError] = useState<string>('')
 
   useEffect(() => {
-    const fetchPresets = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/presets`);
-        if (response.ok) {
-          const data = await response.json();
-          setPresets(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch presets', err);
-      }
-    };
-    fetchPresets();
-  }, []);
+    fetch(`${API_BASE_URL}/presets`)
+      .then(res => res.json())
+      .then(data => setFetchedPresets(data))
+      .catch(err => console.error('Failed to fetch presets', err))
+  }, [])
 
   useEffect(() => {
     const ws = new WebSocket(`${WS_BASE_URL}/metrics/ws`);
 
     ws.onmessage = (event) => {
       try {
-        const data: Metrics = JSON.parse(event.data);
-        setMetrics(data);
+        const data = JSON.parse(event.data);
+        setMetrics({
+          totalRequests: data.totalRequests,
+          totalErrors: data.totalErrors,
+          totalLatency: data.totalLatency,
+          avgLatency: data.avgLatency,
+          minLatency: data.minLatency,
+          maxLatency: data.maxLatency,
+          errorRate: data.errorRate,
+          history: data.history || []
+        });
 
         if (data.history) {
-          const formattedHistory: MetricPoint[] = data.history.map((point) => ({
-            timestamp: new Date(point.timestamp).toLocaleTimeString([], { hour12: false }),
+          const formattedHistory = data.history.map((point: any) => ({
+            timestamp: new Date(point.timestamp).toLocaleTimeString(),
             avgLatency: point.avgLatency,
             p95Latency: point.p95Latency,
             errorRate: point.errorRate,
@@ -119,27 +116,6 @@ function App() {
     fetchTraceRatio();
   }, []);
 
-  const handleSaveRatio = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/settings/trace-ratio`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ratio: traceRatio }),
-      });
-      if (response.ok) {
-        setRatioSavedMessage('Ratio saved!');
-        setTimeout(() => setRatioSavedMessage(''), 2000);
-      } else {
-        setRatioSavedMessage('Error saving');
-        setTimeout(() => setRatioSavedMessage(''), 2000);
-      }
-    } catch (err) {
-      console.error('Failed to save trace ratio', err);
-      setRatioSavedMessage('Error saving');
-      setTimeout(() => setRatioSavedMessage(''), 2000);
-    }
-  };
-
   const handleSave = () => {
     setConfig({ delay, cpuLoad, memoryStress, jitter })
     setSavedMessage('Settings saved!')
@@ -165,7 +141,7 @@ function App() {
           'x-api-key': apiKey
         }
       })
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         setAuthError('Unauthorized: Invalid or missing API key')
         setResult({ delay: 0, cpuLoad: 0, memoryStress: 0, jitter: 0, error: 'Unauthorized' })
         return
@@ -189,7 +165,7 @@ function App() {
           'x-api-key': apiKey
         }
       })
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         setAuthError('Unauthorized: Invalid or missing API key for resetting metrics')
         return
       }
@@ -221,6 +197,8 @@ function App() {
         </div>
       )}
 
+      <LongTermMetrics apiBaseUrl={API_BASE_URL} />
+
       {metrics && (
         <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px', background: '#f9f9f9' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -250,7 +228,7 @@ function App() {
       <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '20px' }}>
         <h2>Presets</h2>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {Object.entries(presets).map(([name, config]) => (
+          {Object.entries(fetchedPresets).map(([name, config]) => (
             <button
               key={name}
               id={`preset-${name.toLowerCase().replace(/ /g, '-')}`}

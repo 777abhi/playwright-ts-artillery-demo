@@ -78,7 +78,7 @@ export class DatabaseService {
         point.p95Latency,
         point.errorRate,
         point.requests,
-        function (err) {
+        function (err: Error | null) {
           if (err) reject(err);
           else resolve();
         }
@@ -96,7 +96,7 @@ export class DatabaseService {
         timestamp,
         anomaly.type,
         anomaly.message,
-        function (err) {
+        function (err: Error | null) {
           if (err) reject(err);
           else resolve();
         }

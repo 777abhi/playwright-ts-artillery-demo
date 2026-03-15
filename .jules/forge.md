@@ -122,3 +122,8 @@ Constraint: Anomalies are detected based on in-memory history. Future implementa
 Decision: Introduced `DatabaseService` using SQLite to persistently store metrics snapshots and detected anomalies. Added `GET /metrics/history/long-term` endpoint.
 Reasoning: To enable long-term historical analysis beyond the recent memory window. SQLite provides a lightweight, zero-configuration embedded database perfect for this standalone performance application without adding complex external dependencies like PostgreSQL to the stack.
 Constraint: Ensure database queries are optimized if the volume of historical data grows significantly.
+
+## 2026-03-15 - Long-Term Metrics Visualization
+Decision: Created `LongTermMetrics` component to fetch and render historical data from the SQLite database.
+Reasoning: To provide a visual interface for analyzing performance trends over longer periods (24h, 7d, 30d) rather than just the recent 30-point memory window.
+Constraint: Fetching very large datasets could cause performance issues on the frontend. Data aggregation may be necessary for longer timeframes in the future.
