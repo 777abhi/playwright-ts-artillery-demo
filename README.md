@@ -68,4 +68,5 @@ docker-compose up --build
 - Integrate an external Identity Provider (e.g., Auth0, Cognito) for managing RBAC roles instead of relying on environment variables.
 - ~~Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.~~ (Completed: Implemented AnomalyDetectorService with sliding window baseline logic)
 - ~~Store metrics and anomalies in a persistent database (e.g. PostgreSQL or InfluxDB) to enable long-term historical analysis beyond the recent memory window.~~ (Completed: Implemented SQLite database for metrics and anomaly persistence)
-- Introduce a new Long-Term Metrics Visualization dashboard in the frontend to query and display historical data from the SQLite database.
+- ~~Introduce a new Long-Term Metrics Visualization dashboard in the frontend to query and display historical data from the SQLite database.~~ (Completed: Implemented LongTermMetrics component)
+- Implement distributed tracing and open telemetry logging to connect metrics to specific code paths for easier root-cause analysis.
