@@ -132,3 +132,8 @@ Constraint: Fetching very large datasets could cause performance issues on the f
 Decision: Introduced `LoadTestingPanel` component and concurrent execution logic in `App.tsx`.
 Reasoning: To allow users to simulate concurrent traffic directly from the UI without relying on external CLI tools, making it easier to verify performance scenarios interactively.
 Constraint: High concurrency might block the browser's main thread or hit browser connection limits (typically 6 per origin). Future improvements should consider Web Workers.
+
+## 2026-03-17 - Web Worker for Load Generation
+Decision: Extracted the concurrent user execution loop from `App.tsx` into a dedicated Web Worker (`loadTest.worker.ts`).
+Reasoning: To offload intense concurrent HTTP request generation from the main UI thread, ensuring the React application remains responsive during heavy load tests.
+Constraint: Web Workers still abide by the browser's concurrent connection limits per origin. This is a frontend architectural improvement, not a bypass of browser network constraints.
