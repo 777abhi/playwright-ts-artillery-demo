@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 cucumber-report.html
 test-results/
 playwright-report/
+backend/metrics.sqlite
