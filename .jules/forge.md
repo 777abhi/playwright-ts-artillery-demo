@@ -127,3 +127,8 @@ Constraint: Ensure database queries are optimized if the volume of historical da
 Decision: Created `LongTermMetrics` component to fetch and render historical data from the SQLite database.
 Reasoning: To provide a visual interface for analyzing performance trends over longer periods (24h, 7d, 30d) rather than just the recent 30-point memory window.
 Constraint: Fetching very large datasets could cause performance issues on the frontend. Data aggregation may be necessary for longer timeframes in the future.
+
+## 2026-03-16 - Advanced Load Testing Configurations
+Decision: Introduced `LoadTestingPanel` component and concurrent execution logic in `App.tsx`.
+Reasoning: To allow users to simulate concurrent traffic directly from the UI without relying on external CLI tools, making it easier to verify performance scenarios interactively.
+Constraint: High concurrency might block the browser's main thread or hit browser connection limits (typically 6 per origin). Future improvements should consider Web Workers.

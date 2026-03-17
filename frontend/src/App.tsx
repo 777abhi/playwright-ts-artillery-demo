@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import MetricsChart, { MetricPoint } from './components/MetricsChart'
 import LongTermMetrics from './components/LongTermMetrics'
+import LoadTestingPanel from './components/LoadTestingPanel'
 import { presets, Config } from './config/presets'
 
 const API_BASE_URL = 'http://localhost:3001'
@@ -48,6 +49,7 @@ function App() {
   const [traceRatio, setTraceRatio] = useState<number>(0.1)
   const [apiKey, setApiKey] = useState<string>('')
   const [authError, setAuthError] = useState<string>('')
+  const [loadTestResult, setLoadTestResult] = useState<{ success: number, errors: number, totalDuration: number } | null>(null)
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/presets`)
@@ -131,9 +133,54 @@ function App() {
     setSavedMessage('')
   }
 
+  const handleLoadTestTrigger = async (concurrentUsers: number, iterations: number) => {
+    setLoading(true);
+    setResult(null);
+    setLoadTestResult(null);
+    setAuthError('');
+
+    let successCount = 0;
+    let errorCount = 0;
+    const startTime = Date.now();
+
+    const runUserSimulations = async () => {
+      for (let i = 0; i < iterations; i++) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`, {
+            headers: {
+              'x-api-key': apiKey
+            }
+          });
+          if (response.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          errorCount++;
+        }
+      }
+    };
+
+    const userPromises = [];
+    for (let u = 0; u < concurrentUsers; u++) {
+      userPromises.push(runUserSimulations());
+    }
+
+    await Promise.all(userPromises);
+
+    setLoadTestResult({
+      success: successCount,
+      errors: errorCount,
+      totalDuration: Date.now() - startTime
+    });
+    setLoading(false);
+  };
+
   const handleTrigger = async () => {
     setLoading(true)
     setResult(null)
+    setLoadTestResult(null)
     setAuthError('')
     try {
       const response = await fetch(`${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`, {
@@ -329,8 +376,20 @@ function App() {
       </div>
 
       <div style={{ marginBottom: '20px' }}>
+        <LoadTestingPanel onTrigger={handleLoadTestTrigger} loading={loading} />
+        {loadTestResult && (
+          <div className="load-test-result" style={{ marginTop: '10px', color: 'blue', border: '1px solid blue', padding: '10px' }}>
+            <h3>Load Test Completed!</h3>
+            <p>Total Duration: {loadTestResult.totalDuration}ms</p>
+            <p>Successful Requests: {loadTestResult.success}</p>
+            <p>Failed Requests: {loadTestResult.errors}</p>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
         <button id="trigger-process" onClick={handleTrigger} disabled={loading} style={{ fontSize: '1.2em', padding: '10px 20px' }}>
-          {loading ? 'Processing...' : 'Trigger Process'}
+          {loading ? 'Processing...' : 'Trigger Single Process'}
         </button>
       </div>
 
