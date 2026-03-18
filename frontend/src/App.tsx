@@ -139,42 +139,30 @@ function App() {
     setLoadTestResult(null);
     setAuthError('');
 
-    let successCount = 0;
-    let errorCount = 0;
-    const startTime = Date.now();
+    const worker = new Worker(new URL('./workers/loadTest.worker.ts', import.meta.url), {
+      type: 'module'
+    });
 
-    const runUserSimulations = async () => {
-      for (let i = 0; i < iterations; i++) {
-        try {
-          const response = await fetch(`${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`, {
-            headers: {
-              'x-api-key': apiKey
-            }
-          });
-          if (response.ok) {
-            successCount++;
-          } else {
-            errorCount++;
-          }
-        } catch (error) {
-          errorCount++;
-        }
-      }
+    worker.onmessage = (event) => {
+      const { success, errors, totalDuration } = event.data;
+      setLoadTestResult({ success, errors, totalDuration });
+      setLoading(false);
+      worker.terminate();
     };
 
-    const userPromises = [];
-    for (let u = 0; u < concurrentUsers; u++) {
-      userPromises.push(runUserSimulations());
-    }
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      setAuthError('An error occurred during load testing.');
+      setLoading(false);
+      worker.terminate();
+    };
 
-    await Promise.all(userPromises);
-
-    setLoadTestResult({
-      success: successCount,
-      errors: errorCount,
-      totalDuration: Date.now() - startTime
+    worker.postMessage({
+      concurrentUsers,
+      iterations,
+      url: `${API_BASE_URL}/process?delay=${config.delay}&cpuLoad=${config.cpuLoad}&memoryStress=${config.memoryStress}&jitter=${config.jitter}`,
+      apiKey
     });
-    setLoading(false);
   };
 
   const handleTrigger = async () => {
