@@ -1,13 +1,14 @@
 config:
-  target: https://www.saucedemo.com
+  target: "http://localhost:3000"
   engines:
     playwright: {}
-  processor: "./processor.ts"
+  processor: "../tests/performance-steps.ts"
   phases:
     - duration: 60
-      arrivalCount: 5
-      name: "Load phase"
+      arrivalRate: 5
+      name: "Sustained Load"
 
 scenarios:
-  - engine: playwright
-    testFunction: "loginFlow"
+  - name: "High Latency Simulation"
+    engine: playwright
+    testFunction: "runPerformanceFlow"

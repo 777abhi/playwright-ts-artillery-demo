@@ -137,3 +137,8 @@ Constraint: High concurrency might block the browser's main thread or hit browse
 Decision: Extracted the concurrent user execution loop from `App.tsx` into a dedicated Web Worker (`loadTest.worker.ts`).
 Reasoning: To offload intense concurrent HTTP request generation from the main UI thread, ensuring the React application remains responsive during heavy load tests.
 Constraint: Web Workers still abide by the browser's concurrent connection limits per origin. This is a frontend architectural improvement, not a bypass of browser network constraints.
+
+## 2026-03-18 - Automated Load Tests Integration
+Decision: Replaced external SauceDemo target in `artillery.yml` with the local application load test.
+Reasoning: To integrate automated load tests using Playwright and Artillery directly into the deployment pipeline, ensuring that performance profiles are automatically verified before releasing new builds.
+Constraint: Load tests are run against `http://localhost:3000` via Artillery `processor` config pointing to `tests/performance-steps.ts`.

@@ -65,8 +65,9 @@ docker-compose up --build
 - Implement server-side rendering (SSR) for initial load performance.
 - ~~Introduce advanced load testing configurations allowing for concurrent user simulation parameters directly in the UI.~~ (Completed: Added `LoadTestingPanel` component for concurrent API requests)
 - ~~Implement Web Worker based load generation in the frontend to avoid blocking the main UI thread during intense concurrent user simulations.~~ (Completed: Offloaded concurrent requests to Web Worker)
-- Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.
+- ~~Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.~~ (Completed: Integrated local Playwright and Artillery load tests into CI pipelines)
 - Explore Service Workers to cache simulation presets and metrics dashboard assets for offline configuration access.
+- Implement GraphQL to reduce over-fetching and under-fetching of data.
 - Integrate an external Identity Provider (e.g., Auth0, Cognito) for managing RBAC roles instead of relying on environment variables.
 - ~~Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.~~ (Completed: Implemented AnomalyDetectorService with sliding window baseline logic)
 - ~~Store metrics and anomalies in a persistent database (e.g. PostgreSQL or InfluxDB) to enable long-term historical analysis beyond the recent memory window.~~ (Completed: Implemented SQLite database for metrics and anomaly persistence)
