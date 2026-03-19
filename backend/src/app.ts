@@ -11,6 +11,8 @@ import { AnomalyDetectorService } from './services/anomaly-detector.service';
 import { DatabaseService } from './services/database.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
+import mercurius from 'mercurius';
+import { schema, buildResolvers } from './graphql/schema';
 
 export function buildApp(dbPath?: string): FastifyInstance {
   const fastify = Fastify({
@@ -56,6 +58,17 @@ export function buildApp(dbPath?: string): FastifyInstance {
   let snapshotInterval: NodeJS.Timeout;
 
   fastify.register(fastifyWebsocket);
+
+  fastify.register(mercurius, {
+    schema,
+    resolvers: buildResolvers(
+      metricsService,
+      presetService,
+      databaseService,
+      anomalyDetectorService
+    ),
+    graphiql: true,
+  });
 
   fastify.addHook('onReady', async () => {
     await databaseService.init();

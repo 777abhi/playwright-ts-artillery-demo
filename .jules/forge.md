@@ -142,3 +142,8 @@ Constraint: Web Workers still abide by the browser's concurrent connection limit
 Decision: Replaced external SauceDemo target in `artillery.yml` with the local application load test.
 Reasoning: To integrate automated load tests using Playwright and Artillery directly into the deployment pipeline, ensuring that performance profiles are automatically verified before releasing new builds.
 Constraint: Load tests are run against `http://localhost:3000` via Artillery `processor` config pointing to `tests/performance-steps.ts`.
+
+## 2026-03-19 - GraphQL Integration
+Decision: Integrated GraphQL via `mercurius` to expose backend data (metrics, presets, traceRatio, longTermMetrics).
+Reasoning: To establish a flexible querying mechanism that reduces over-fetching/under-fetching compared to standard REST endpoints, improving frontend performance over constrained networks.
+Constraint: As the schema evolves, ensure strong type definitions and maintain resolver performance to prevent the GraphQL endpoint from becoming a new bottleneck.
