@@ -67,8 +67,9 @@ docker-compose up --build
 - ~~Implement Web Worker based load generation in the frontend to avoid blocking the main UI thread during intense concurrent user simulations.~~ (Completed: Offloaded concurrent requests to Web Worker)
 - ~~Introduce automated load tests using Playwright and Artillery integrated directly into the deployment pipeline to automatically verify performance profiles before releasing new builds.~~ (Completed: Integrated local Playwright and Artillery load tests into CI pipelines)
 - Explore Service Workers to cache simulation presets and metrics dashboard assets for offline configuration access.
-- Implement GraphQL to reduce over-fetching and under-fetching of data.
+- ~~Implement GraphQL to reduce over-fetching and under-fetching of data.~~ (Completed: Added Mercurius GraphQL plugin for metrics and configurations)
 - Integrate an external Identity Provider (e.g., Auth0, Cognito) for managing RBAC roles instead of relying on environment variables.
+- Introduce AI-driven analysis of metrics history to automatically recommend optimal architecture scaling or auto-remediation actions.
 - ~~Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.~~ (Completed: Implemented AnomalyDetectorService with sliding window baseline logic)
 - ~~Store metrics and anomalies in a persistent database (e.g. PostgreSQL or InfluxDB) to enable long-term historical analysis beyond the recent memory window.~~ (Completed: Implemented SQLite database for metrics and anomaly persistence)
 - ~~Introduce a new Long-Term Metrics Visualization dashboard in the frontend to query and display historical data from the SQLite database.~~ (Completed: Implemented LongTermMetrics component)
