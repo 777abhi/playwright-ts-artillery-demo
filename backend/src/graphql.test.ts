@@ -119,4 +119,27 @@ describe('GraphQL Endpoint', () => {
     expect(Array.isArray(body.data.longTermMetrics.metrics)).toBe(true);
     expect(Array.isArray(body.data.longTermMetrics.anomalies)).toBe(true);
   });
+
+  it('should fetch aiRecommendations via GraphQL', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: {
+        query: `
+          query {
+            aiRecommendations {
+              action
+              type
+              confidence
+              reason
+            }
+          }
+        `
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(Array.isArray(body.data.aiRecommendations)).toBe(true);
+  });
 });

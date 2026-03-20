@@ -9,6 +9,7 @@ import { PresetService } from './services/preset.service';
 import { AutoSamplerService } from './services/auto-sampler.service';
 import { AnomalyDetectorService } from './services/anomaly-detector.service';
 import { DatabaseService } from './services/database.service';
+import { AiAnalysisService } from './services/ai-analysis.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
 import mercurius from 'mercurius';
@@ -35,6 +36,7 @@ export function buildApp(dbPath?: string): FastifyInstance {
   const authService = new AuthService();
   const anomalyDetectorService = new AnomalyDetectorService();
   const databaseService = new DatabaseService(dbPath);
+  const aiAnalysisService = new AiAnalysisService();
 
   fastify.register(cors, { origin: '*' });
 
@@ -65,7 +67,8 @@ export function buildApp(dbPath?: string): FastifyInstance {
       metricsService,
       presetService,
       databaseService,
-      anomalyDetectorService
+      anomalyDetectorService,
+      aiAnalysisService
     ),
     graphiql: true,
   });

@@ -4,6 +4,7 @@ import { MetricsService } from '../services/metrics.service';
 import { PresetService } from '../services/preset.service';
 import { DatabaseService } from '../services/database.service';
 import { AnomalyDetectorService } from '../services/anomaly-detector.service';
+import { AiAnalysisService } from '../services/ai-analysis.service';
 
 export const schema = `
   type PresetConfig {
@@ -48,11 +49,19 @@ export const schema = `
     anomalies: [Anomaly!]!
   }
 
+  type AiRecommendation {
+    action: String!
+    type: String!
+    confidence: Float!
+    reason: String!
+  }
+
   type Query {
     traceRatio: Float!
     presets: [Preset!]!
     metrics: Metrics!
     longTermMetrics(startTime: Float, endTime: Float): LongTermMetrics!
+    aiRecommendations: [AiRecommendation!]!
   }
 `;
 
@@ -60,7 +69,8 @@ export function buildResolvers(
   metricsService: MetricsService,
   presetService: PresetService,
   databaseService: DatabaseService,
-  anomalyDetectorService: AnomalyDetectorService
+  anomalyDetectorService: AnomalyDetectorService,
+  aiAnalysisService: AiAnalysisService
 ) {
   return {
     Query: {
@@ -95,6 +105,10 @@ export function buildResolvers(
           metrics,
           anomalies
         };
+      },
+      aiRecommendations: () => {
+        const history = metricsService.getHistory();
+        return aiAnalysisService.analyze(history);
       }
     }
   };
