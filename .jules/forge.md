@@ -152,3 +152,8 @@ Constraint: As the schema evolves, ensure strong type definitions and maintain r
 Decision: Implemented `AiAnalysisService` with heuristic rules and exposed it via GraphQL.
 Reasoning: To automatically recommend optimal architecture scaling or auto-remediation actions based on real-time metrics, fulfilling the vision of intelligent system observability.
 Constraint: Current implementation uses deterministic heuristics rather than true ML models. Future iterations should integrate an external ML inference service for deeper insights.
+
+## 2026-03-21 - Predictive Scaling and Event-Driven Refactor
+Decision: Implemented `PredictiveScalingService` and refactored backend `app.ts` to use Node.js `EventEmitter` for metrics snapshots.
+Reasoning: To predictively auto-scale based on sharp request trends and to decouple the monolithic `setInterval` loop into an Event-Driven architecture, allowing independent listeners for auto-sampling, anomaly detection, persistence, and websocket streaming.
+Constraint: Ensure all future asynchronous operations reacting to metrics snapshots are registered as event listeners rather than modifying the core emission loop.

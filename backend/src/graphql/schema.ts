@@ -5,6 +5,7 @@ import { PresetService } from '../services/preset.service';
 import { DatabaseService } from '../services/database.service';
 import { AnomalyDetectorService } from '../services/anomaly-detector.service';
 import { AiAnalysisService } from '../services/ai-analysis.service';
+import { PredictiveScalingService } from '../services/predictive-scaling.service';
 
 export const schema = `
   type PresetConfig {
@@ -70,7 +71,8 @@ export function buildResolvers(
   presetService: PresetService,
   databaseService: DatabaseService,
   anomalyDetectorService: AnomalyDetectorService,
-  aiAnalysisService: AiAnalysisService
+  aiAnalysisService: AiAnalysisService,
+  predictiveScalingService: PredictiveScalingService
 ) {
   return {
     Query: {
@@ -108,7 +110,12 @@ export function buildResolvers(
       },
       aiRecommendations: () => {
         const history = metricsService.getHistory();
-        return aiAnalysisService.analyze(history);
+        const recommendations = [...aiAnalysisService.analyze(history)];
+        const predictiveRec = predictiveScalingService.analyze(history);
+        if (predictiveRec) {
+          recommendations.push(predictiveRec);
+        }
+        return recommendations;
       }
     }
   };

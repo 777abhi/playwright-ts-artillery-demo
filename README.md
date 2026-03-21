@@ -73,5 +73,6 @@ docker-compose up --build
 - ~~Introduce anomaly detection for real-time metrics, using a sliding window algorithm to automatically notify the frontend of sudden latency deviations from historical baselines.~~ (Completed: Implemented AnomalyDetectorService with sliding window baseline logic)
 - ~~Store metrics and anomalies in a persistent database (e.g. PostgreSQL or InfluxDB) to enable long-term historical analysis beyond the recent memory window.~~ (Completed: Implemented SQLite database for metrics and anomaly persistence)
 - ~~Introduce a new Long-Term Metrics Visualization dashboard in the frontend to query and display historical data from the SQLite database.~~ (Completed: Implemented LongTermMetrics component)
-- Implement distributed tracing and open telemetry logging to connect metrics to specific code paths for easier root-cause analysis.
-- Implement predictive auto-scaling hooks to automatically provision resources before simulated load overwhelms the system.
+- ~~Implement distributed tracing and open telemetry logging to connect metrics to specific code paths for easier root-cause analysis.~~ (Completed: Implemented OpenTelemetry and Jaeger tracing)
+- ~~Implement predictive auto-scaling hooks to automatically provision resources before simulated load overwhelms the system.~~ (Completed: Implemented PredictiveScalingService)
+- Extract all backend services into separate microservices communicating via message queues.
