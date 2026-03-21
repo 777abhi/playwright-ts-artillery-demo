@@ -147,3 +147,8 @@ Constraint: Load tests are run against `http://localhost:3000` via Artillery `pr
 Decision: Integrated GraphQL via `mercurius` to expose backend data (metrics, presets, traceRatio, longTermMetrics).
 Reasoning: To establish a flexible querying mechanism that reduces over-fetching/under-fetching compared to standard REST endpoints, improving frontend performance over constrained networks.
 Constraint: As the schema evolves, ensure strong type definitions and maintain resolver performance to prevent the GraphQL endpoint from becoming a new bottleneck.
+
+## 2026-03-20 - AI-driven Analysis of Metrics History
+Decision: Implemented `AiAnalysisService` with heuristic rules and exposed it via GraphQL.
+Reasoning: To automatically recommend optimal architecture scaling or auto-remediation actions based on real-time metrics, fulfilling the vision of intelligent system observability.
+Constraint: Current implementation uses deterministic heuristics rather than true ML models. Future iterations should integrate an external ML inference service for deeper insights.
