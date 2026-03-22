@@ -10,10 +10,12 @@ import { AutoSamplerService } from './services/auto-sampler.service';
 import { AnomalyDetectorService } from './services/anomaly-detector.service';
 import { DatabaseService } from './services/database.service';
 import { AiAnalysisService } from './services/ai-analysis.service';
+import { PredictiveScalingService } from './services/predictive-scaling.service';
 import fastifyWebsocket from '@fastify/websocket';
 import { dynamicSampler } from './tracing';
 import mercurius from 'mercurius';
 import { schema, buildResolvers } from './graphql/schema';
+import { EventEmitter } from 'events';
 
 export function buildApp(dbPath?: string): FastifyInstance {
   const fastify = Fastify({
@@ -37,6 +39,9 @@ export function buildApp(dbPath?: string): FastifyInstance {
   const anomalyDetectorService = new AnomalyDetectorService();
   const databaseService = new DatabaseService(dbPath);
   const aiAnalysisService = new AiAnalysisService();
+  const predictiveScalingService = new PredictiveScalingService();
+
+  const eventEmitter = new EventEmitter();
 
   fastify.register(cors, { origin: '*' });
 
@@ -68,36 +73,63 @@ export function buildApp(dbPath?: string): FastifyInstance {
       presetService,
       databaseService,
       anomalyDetectorService,
-      aiAnalysisService
+      aiAnalysisService,
+      predictiveScalingService
     ),
     graphiql: true,
+  });
+
+  predictiveScalingService.on('scale', (recommendation) => {
+    fastify.log.info(`[Auto-Provisioning Hook] Executing action: ${recommendation.action}. Reason: ${recommendation.reason}`);
   });
 
   fastify.addHook('onReady', async () => {
     await databaseService.init();
 
-    snapshotInterval = setInterval(() => {
-      metricsService.snapshot();
-
-      const history = metricsService.getHistory();
-      let anomalies: any[] = [];
+    // Listener 1: Auto Sampler
+    eventEmitter.on('snapshot', ({ history }) => {
       if (history.length > 0) {
         const latestPoint = history[history.length - 1];
         autoSamplerService.adjustRatio(dynamicSampler, latestPoint.requests);
-        anomalies = anomalyDetectorService.detectAnomalies(history);
+      }
+    });
 
-        // Persist to database
+    // Listener 2: Anomaly Detection
+    eventEmitter.on('snapshot', ({ history }) => {
+      if (history.length > 0) {
+        const anomalies = anomalyDetectorService.detectAnomalies(history);
+        eventEmitter.emit('anomalies_detected', { anomalies, latestPoint: history[history.length - 1] });
+      }
+    });
+
+    // Listener 3: Predictive Scaling
+    eventEmitter.on('snapshot', ({ history }) => {
+      if (history.length > 0) {
+        predictiveScalingService.analyze(history);
+      }
+    });
+
+    // Listener 4: DB Persistence
+    eventEmitter.on('snapshot', ({ history }) => {
+      if (history.length > 0) {
+        const latestPoint = history[history.length - 1];
         databaseService.saveMetricPoint(latestPoint).catch(err => {
           fastify.log.error('Failed to save metric point', err);
         });
-
-        for (const anomaly of anomalies) {
-          databaseService.saveAnomaly(anomaly, latestPoint.timestamp).catch(err => {
-            fastify.log.error('Failed to save anomaly', err);
-          });
-        }
       }
+    });
 
+    eventEmitter.on('anomalies_detected', ({ anomalies, latestPoint }) => {
+      for (const anomaly of anomalies) {
+        databaseService.saveAnomaly(anomaly, latestPoint.timestamp).catch(err => {
+          fastify.log.error('Failed to save anomaly', err);
+        });
+      }
+    });
+
+    // Listener 5: Websocket Broadcast
+    eventEmitter.on('snapshot', ({ history }) => {
+      const anomalies = anomalyDetectorService.detectAnomalies(history);
       const metricsData = JSON.stringify({
         ...metricsService.getMetrics(),
         history,
@@ -109,6 +141,13 @@ export function buildApp(dbPath?: string): FastifyInstance {
           client.send(metricsData);
         }
       });
+    });
+
+    snapshotInterval = setInterval(() => {
+      metricsService.snapshot();
+      const history = metricsService.getHistory();
+
+      eventEmitter.emit('snapshot', { history });
     }, 2000);
   });
 
